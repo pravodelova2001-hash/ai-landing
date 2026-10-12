@@ -186,13 +186,17 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
    duplicates them) and loops by animating exactly -50% — the point where
    the second copy lines up pixel-for-pixel with the first, so the loop is
    seamless. Purely decorative, no interaction. */
-.feed-marquee{margin:0 -24px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+.feed-marquee{margin:0 -24px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;scrollbar-width:thin;scrollbar-color:var(--red) var(--bg-2)}
 @media (min-width:860px){ .feed-marquee{margin-inline:-44px} }
 .feed-marquee::before, .feed-marquee::after{
   content:'';position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none;
 }
 .feed-marquee::before{left:0;background:linear-gradient(90deg, var(--bg), rgba(20,20,20,0))}
 .feed-marquee::after{right:0;background:linear-gradient(270deg, var(--bg), rgba(20,20,20,0))}
+.feed-marquee::-webkit-scrollbar{height:6px}
+.feed-marquee::-webkit-scrollbar-track{background:var(--bg-2);border-radius:980px}
+.feed-marquee::-webkit-scrollbar-thumb{background:var(--red);border-radius:980px}
+.feed-marquee::-webkit-scrollbar-thumb:hover{background:var(--red-bright)}
 .feed-track{display:flex;gap:16px;width:max-content;padding-inline:24px}
 @media (min-width:860px){ .feed-track{padding-inline:44px} }
 .feed-card{
