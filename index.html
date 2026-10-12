@@ -203,6 +203,50 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 .feed-card-tag{font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:12px}
 .feed-card-note{margin:12px 0 0;font-size:.82rem;color:var(--red-bright);font-weight:600}
 
+/* ---------- brand cube: 3D version of the logo, shown edge-on (like a
+   die resting on a corner) — front face is the logo mark, the other five
+   faces carry dice pips (1–5 dots) purely as a decorative detail. Spins
+   a quick full turn every so often as a small idle flourish. ---------- */
+.brand-cube{perspective:300px;display:inline-block;flex-shrink:0}
+.brand-cube__3d{
+  width:var(--cube-size);height:var(--cube-size);position:relative;transform-style:preserve-3d;
+  transform:rotateX(-18deg) rotateY(38deg);
+  transition:transform .55s cubic-bezier(.25,.9,.35,1);
+}
+.brand-cube__face{
+  position:absolute;width:var(--cube-size);height:var(--cube-size);
+  border-radius:calc(var(--cube-size) * .22);border:1px solid rgba(0,0,0,.3);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-cube__face--mark{background:var(--red-bright)}
+.brand-cube__face--plain{background:var(--red)}
+.brand-cube__front{transform:translateZ(calc(var(--cube-size) / 2))}
+.brand-cube__back{transform:translateZ(calc(var(--cube-size) / -2)) rotateY(180deg)}
+.brand-cube__right{transform:rotateY(90deg) translateZ(calc(var(--cube-size) / 2))}
+.brand-cube__left{transform:rotateY(-90deg) translateZ(calc(var(--cube-size) / 2))}
+.brand-cube__top{transform:rotateX(90deg) translateZ(calc(var(--cube-size) / 2))}
+.brand-cube__bottom{transform:rotateX(-90deg) translateZ(calc(var(--cube-size) / 2))}
+.brand-cube__grid{
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:calc(var(--cube-size) * .06);width:54%;height:54%;
+}
+.brand-cube__grid span{border-radius:22%;background:#5b6148}
+.brand-cube__grid span:first-child{background:var(--on-accent)}
+.brand-cube__pips{position:relative;width:100%;height:100%}
+.brand-cube__pip{
+  position:absolute;width:calc(var(--cube-size) * .16);height:calc(var(--cube-size) * .16);
+  border-radius:50%;background:var(--on-accent);
+}
+.brand-cube__pip.tl{top:16%;left:16%}
+.brand-cube__pip.tr{top:16%;right:16%}
+.brand-cube__pip.ml{top:50%;left:16%;transform:translateY(-50%)}
+.brand-cube__pip.mr{top:50%;right:16%;transform:translateY(-50%)}
+.brand-cube__pip.c{top:50%;left:50%;transform:translate(-50%,-50%)}
+.brand-cube__pip.bl{bottom:16%;left:16%}
+.brand-cube__pip.br{bottom:16%;right:16%}
+
+.footer-cube-row{display:flex;justify-content:center;margin-bottom:28px}
+
 /* ---------- why-subscription cards ---------- */
 .whygrid{margin-top:40px;display:grid;gap:14px}
 @media (min-width:760px){ .whygrid{grid-template-columns:repeat(3,1fr)} }
@@ -339,13 +383,28 @@ footer{padding-block:40px}
 <header class="bar">
   <div class="bar-inner">
     <div class="mark">
-      <svg class="mark-icon" width="30" height="30" viewBox="0 0 36 36" aria-hidden="true">
-        <circle cx="18" cy="18" r="18" fill="#E4FD97"/>
-        <rect x="9" y="9" width="7" height="7" rx="1.8" fill="#141414"/>
-        <rect x="20" y="9" width="7" height="7" rx="1.8" fill="#5b6148"/>
-        <rect x="9" y="20" width="7" height="7" rx="1.8" fill="#5b6148"/>
-        <rect x="20" y="20" width="7" height="7" rx="1.8" fill="#5b6148"/>
-      </svg>
+      <span class="brand-cube" style="--cube-size:28px" aria-hidden="true">
+        <span class="brand-cube__3d" id="headerCube">
+          <span class="brand-cube__face brand-cube__face--mark brand-cube__front">
+            <span class="brand-cube__grid"><span></span><span></span><span></span><span></span></span>
+          </span>
+          <span class="brand-cube__face brand-cube__face--mark brand-cube__back">
+            <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip c"></span><span class="brand-cube__pip br"></span></span>
+          </span>
+          <span class="brand-cube__face brand-cube__face--plain brand-cube__right">
+            <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip br"></span></span>
+          </span>
+          <span class="brand-cube__face brand-cube__face--plain brand-cube__left">
+            <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip tr"></span><span class="brand-cube__pip bl"></span></span>
+          </span>
+          <span class="brand-cube__face brand-cube__face--plain brand-cube__top">
+            <span class="brand-cube__pips"><span class="brand-cube__pip c"></span></span>
+          </span>
+          <span class="brand-cube__face brand-cube__face--plain brand-cube__bottom">
+            <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip tr"></span><span class="brand-cube__pip bl"></span><span class="brand-cube__pip br"></span></span>
+          </span>
+        </span>
+      </span>
       Быстрый старт с AI
     </div>
     <nav>
@@ -697,6 +756,30 @@ footer{padding-block:40px}
 </main>
 
 <footer class="wrap">
+  <div class="footer-cube-row">
+    <span class="brand-cube" style="--cube-size:64px" aria-hidden="true">
+      <span class="brand-cube__3d" id="footerCube">
+        <span class="brand-cube__face brand-cube__face--mark brand-cube__front">
+          <span class="brand-cube__grid"><span></span><span></span><span></span><span></span></span>
+        </span>
+        <span class="brand-cube__face brand-cube__face--mark brand-cube__back">
+          <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip c"></span><span class="brand-cube__pip br"></span></span>
+        </span>
+        <span class="brand-cube__face brand-cube__face--plain brand-cube__right">
+          <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip br"></span></span>
+        </span>
+        <span class="brand-cube__face brand-cube__face--plain brand-cube__left">
+          <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip tr"></span><span class="brand-cube__pip bl"></span></span>
+        </span>
+        <span class="brand-cube__face brand-cube__face--plain brand-cube__top">
+          <span class="brand-cube__pips"><span class="brand-cube__pip c"></span></span>
+        </span>
+        <span class="brand-cube__face brand-cube__face--plain brand-cube__bottom">
+          <span class="brand-cube__pips"><span class="brand-cube__pip tl"></span><span class="brand-cube__pip tr"></span><span class="brand-cube__pip bl"></span><span class="brand-cube__pip br"></span></span>
+        </span>
+      </span>
+    </span>
+  </div>
   <div class="foot-row">
     <span>Быстрый старт с AI — Валерия</span>
     <span>Подписка на AI-инструменты для малого бизнеса</span>
@@ -711,6 +794,25 @@ footer{padding-block:40px}
   "use strict";
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hasGsap = typeof window.gsap !== 'undefined';
+
+  // brand cube: sits at a fixed resting angle, every so often spins one
+  // quick full turn as a small idle flourish. Rotating by exactly 360°
+  // multiples always lands back at the same visible angle, so there's
+  // never a snap-back — just keep adding full turns.
+  (function(){
+    if(reduced) return;
+    var BASE_RX = -18, BASE_RY = 38;
+    [document.getElementById('headerCube'), document.getElementById('footerCube')].forEach(function(el){
+      if(!el) return;
+      var turns = 0;
+      function spin(){
+        turns += 1;
+        el.style.transform = 'rotateX(' + BASE_RX + 'deg) rotateY(' + (BASE_RY + 360 * turns) + 'deg)';
+        setTimeout(spin, 6000 + Math.random() * 9000);
+      }
+      setTimeout(spin, 3000 + Math.random() * 4000);
+    });
+  })();
 
   // badge flip: single source of truth is the 'flipped' class (no CSS :hover
   // driving it too — that was the bug: on iOS a tap first simulates :hover,
