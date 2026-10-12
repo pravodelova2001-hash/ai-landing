@@ -34,7 +34,7 @@ body{
 ::selection{background:var(--red);color:var(--on-accent)}
 a{color:inherit;text-decoration:none}
 a:focus-visible, button:focus-visible, .mod:focus-visible, .q button:focus-visible,
-.badge-flip:focus-visible, .feed-card:focus-visible, .bio-toggle:focus-visible{
+.badge-flip:focus-visible, .bio-toggle:focus-visible{
   outline:2px solid var(--red-bright);outline-offset:3px;border-radius:4px;
 }
 img{max-width:100%}
@@ -184,8 +184,7 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
    steady pace, no tilt. The track holds the 8 cards twice back-to-back (JS
    duplicates them) and loops by animating exactly -50% — the point where
    the second copy lines up pixel-for-pixel with the first, so the loop is
-   seamless. Clicking any card opens it full-size in a popup on top; the
-   ribbon itself is never paused, exactly as asked. */
+   seamless. Purely decorative, no interaction. */
 .feed-marquee{margin:0 -24px;overflow:hidden;position:relative}
 @media (min-width:860px){ .feed-marquee{margin-inline:-44px} }
 .feed-marquee::before, .feed-marquee::after{
@@ -197,33 +196,12 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 @media (min-width:860px){ .feed-track{padding-inline:44px} }
 .feed-card{
   flex:0 0 260px;width:260px;background:var(--bg-2);border:1px solid var(--glass-border);
-  border-radius:18px;padding:22px 24px;cursor:pointer;user-select:none;display:flex;flex-direction:column;
-  transition:border-color .2s,transform .2s;
+  border-radius:18px;padding:22px 24px;user-select:none;display:flex;flex-direction:column;
 }
-.feed-card:hover{border-color:var(--glass-border);transform:translateY(-3px)}
 @media (min-width:600px){ .feed-card{flex-basis:300px;width:300px} }
 @keyframes feed-scroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .feed-card-tag{font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:12px}
 .feed-card-note{margin:12px 0 0;font-size:.82rem;color:var(--red-bright);font-weight:600}
-.feed-hint{margin-top:18px;text-align:center;font-size:.82rem;color:var(--fg-dim)}
-
-/* popup: the clicked card "pops up" full-size on top, ribbon keeps scrolling
-   behind it. Closes on backdrop click, clicking the popup itself, or Esc. */
-.feed-popup-overlay{
-  position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
-  padding:24px;background:rgba(10,10,10,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  opacity:0;pointer-events:none;transition:opacity .25s ease;
-}
-.feed-popup-overlay[data-open="true"]{opacity:1;pointer-events:auto}
-.feed-popup{
-  width:100%;max-width:420px;cursor:pointer;position:relative;
-  padding:52px 26px 28px;
-  transform:scale(.92);transition:transform .25s ease;
-  box-shadow:0 30px 60px -20px rgba(0,0,0,.8);
-}
-.feed-popup-overlay[data-open="true"] .feed-popup{transform:scale(1)}
-.feed-popup .sample-post{margin-top:2px}
-.feed-popup-close{position:absolute;top:18px;right:20px;color:var(--fg-dim);font-size:1.1rem;line-height:1}
 
 /* ---------- why-subscription cards ---------- */
 .whygrid{margin-top:40px;display:grid;gap:14px}
@@ -537,7 +515,7 @@ footer{padding-block:40px}
       <div class="sample-label">Так выглядят готовые материалы — примеры из разных сфер, у вас будет под вашу</div>
       <div class="feed-marquee">
         <div class="feed-track" id="feedTrack">
-          <div class="feed-card" data-idx="0" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Контент</div>
             <div class="sample-post">
               <p>Ламинирование ресниц до Нового года — успейте, пока есть свободные окна 🎄</p>
@@ -547,7 +525,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Под вашу услугу, тон и сезон — не универсальный текст из интернета</p>
           </div>
-          <div class="feed-card" data-idx="1" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Контент</div>
             <div class="sample-post">
               <p>Тыквенный раф возвращается — и только до конца ноября 🍂</p>
@@ -557,7 +535,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Учитывает сезон и то, что вы уже публиковали — не повторяется</p>
           </div>
-          <div class="feed-card" data-idx="2" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Клиенты</div>
             <div class="sample-post">
               <p>Здравствуйте!</p>
@@ -567,7 +545,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Подстраивается под ваш график записи и манеру общения</p>
           </div>
-          <div class="feed-card" data-idx="3" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Клиенты</div>
             <div class="sample-post">
               <p>Привет! 💪</p>
@@ -577,7 +555,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Отвечает в вашем тоне — от делового до неформального</p>
           </div>
-          <div class="feed-card" data-idx="4" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Документы</div>
             <div class="sample-post">
               <p><b>Коммерческое предложение — генеральная уборка офиса</b></p>
@@ -587,7 +565,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Аргументы и структура — под вашу нишу и клиента</p>
           </div>
-          <div class="feed-card" data-idx="5" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Документы</div>
             <div class="sample-post">
               <p><b>Счёт на оплату — ремонт стиральной машины</b></p>
@@ -597,7 +575,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ Формат и детали — под то, как у вас принято оформлять</p>
           </div>
-          <div class="feed-card" data-idx="6" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Идеи</div>
             <div class="sample-post">
               <p class="sample-tags">Промпт для AI:</p>
@@ -605,7 +583,7 @@ footer{padding-block:40px}
             </div>
             <p class="feed-card-note">✨ 5 готовых идей за секунды вместо часа мозгового штурма</p>
           </div>
-          <div class="feed-card" data-idx="7" tabindex="0" role="button" aria-label="Открыть пример целиком">
+          <div class="feed-card">
             <div class="feed-card-tag">Идеи</div>
             <div class="sample-post">
               <p class="sample-tags">Промпт для AI:</p>
@@ -615,18 +593,8 @@ footer{padding-block:40px}
           </div>
         </div>
       </div>
-      <p class="feed-hint">Нажмите на карточку</p>
     </div>
   </section>
-
-  <div class="feed-popup-overlay" id="feedPopupOverlay" data-open="false">
-    <div class="feed-popup glass" id="feedPopup" tabindex="0" role="button" aria-label="Закрыть пример">
-      <span class="feed-popup-close" aria-hidden="true">✕</span>
-      <div class="feed-card-tag" id="feedPopupTag"></div>
-      <div class="sample-post" id="feedPopupBody"></div>
-      <p class="feed-card-note" id="feedPopupNote"></p>
-    </div>
-  </div>
 
   <section id="base">
     <div class="kicker2">Входит в любую подписку</div>
@@ -920,55 +888,11 @@ footer{padding-block:40px}
   // ---- examples "feed": a straight ribbon that scrolls sideways forever
   // (pure CSS animation on .feed-track). The track is duplicated once here
   // so the loop is seamless — see the CSS for why -50% is the magic number.
-  // Clicking any card pops it up full-size on top; the ribbon is never
-  // paused, it keeps scrolling behind the popup the whole time. ----
+  // Purely decorative, no click interaction. ----
   (function(){
     var track = document.getElementById('feedTrack');
-    var overlay = document.getElementById('feedPopupOverlay');
-    if(!track || !overlay) return;
+    if(!track) return;
     track.innerHTML += track.innerHTML;
-
-    var popup = document.getElementById('feedPopup');
-    var popupTag = document.getElementById('feedPopupTag');
-    var popupBody = document.getElementById('feedPopupBody');
-    var popupNote = document.getElementById('feedPopupNote');
-    var openIdx = null;
-
-    function openCard(card){
-      openIdx = card.dataset.idx;
-      popupTag.textContent = card.querySelector('.feed-card-tag').textContent;
-      popupBody.innerHTML = card.querySelector('.sample-post').innerHTML;
-      popupNote.textContent = card.querySelector('.feed-card-note').textContent;
-      overlay.setAttribute('data-open', 'true');
-    }
-    function closeCard(){
-      openIdx = null;
-      overlay.setAttribute('data-open', 'false');
-    }
-
-    track.addEventListener('click', function(e){
-      var card = e.target.closest('.feed-card');
-      if(!card) return;
-      if(overlay.getAttribute('data-open') === 'true' && card.dataset.idx === openIdx) closeCard();
-      else openCard(card);
-    });
-    track.addEventListener('keydown', function(e){
-      if(e.key !== 'Enter' && e.key !== ' ') return;
-      var card = e.target.closest('.feed-card');
-      if(!card) return;
-      e.preventDefault();
-      openCard(card);
-    });
-    popup.addEventListener('click', closeCard);
-    popup.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); closeCard(); }
-    });
-    overlay.addEventListener('click', function(e){
-      if(e.target === overlay) closeCard();
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') closeCard();
-    });
   })();
 
   function countUp(el, to, dur){
