@@ -183,10 +183,12 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 
 /* carousel: a hard-clipped viewport sized (by JS) to fit an exact number
    of cards — 3 on desktop, fewer on narrow screens — no peeking edge,
-   no free scroll/swipe. Arrows sit beside the viewport, not on top of
-   it, and page the track by whole screens, wrapping around at the ends. */
+   no free scroll — paging only, whole screens at a time, wrapping around
+   at the ends. Arrows sit beside the viewport on wider screens (mouse);
+   below 768px there's no room for them so they're hidden and a touch
+   swipe on the cards does the paging instead (see the carousel script). */
 .carousel{display:flex;align-items:center;justify-content:center;gap:10px}
-.carousel-viewport{overflow:hidden;flex-shrink:0}
+.carousel-viewport{overflow:hidden;flex-shrink:0;touch-action:pan-y}
 .carousel-track{display:flex;gap:16px;transition:transform .45s cubic-bezier(.25,.9,.35,1)}
 
 .carousel-arrow{
@@ -194,6 +196,7 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
   background:var(--glass);border:1px solid var(--glass-border);color:var(--fg);cursor:pointer;
   transition:box-shadow .25s ease,border-color .25s ease,background .25s ease,transform .15s ease;
 }
+@media (max-width:767px){ .carousel-arrow{display:none} .carousel{gap:0} }
 .carousel-arrow svg{width:18px;height:18px}
 .carousel-arrow:hover, .carousel-arrow:focus-visible{
   border-color:var(--red-bright);box-shadow:0 0 0 1px var(--red-bright), 0 0 18px 2px var(--red-glow);
@@ -916,6 +919,25 @@ footer{padding-block:40px}
 
     prevBtn.addEventListener('click', function(){ flash(prevBtn); goTo(page - 1); });
     nextBtn.addEventListener('click', function(){ flash(nextBtn); goTo(page + 1); });
+
+    // touch swipe — mainly for narrow screens where the arrows are hidden
+    // (no room for them there), but works everywhere a touchscreen is used.
+    var touchStartX = null, touchStartY = null;
+    viewport.addEventListener('touchstart', function(e){
+      var t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    }, {passive:true});
+    viewport.addEventListener('touchend', function(e){
+      if(touchStartX === null) return;
+      var t = e.changedTouches[0];
+      var dx = t.clientX - touchStartX;
+      var dy = t.clientY - touchStartY;
+      touchStartX = null;
+      if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+        goTo(dx < 0 ? page + 1 : page - 1);
+      }
+    }, {passive:true});
 
     var resizeTimer;
     window.addEventListener('resize', function(){
