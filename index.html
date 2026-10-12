@@ -181,24 +181,47 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 .sample-post p:last-child{margin-bottom:0}
 .sample-tags{color:var(--red-bright)}
 
-/* straight, sideways-flowing "feed" ribbon: cards scroll left forever at a
-   steady pace, no tilt. The track holds the 8 cards twice back-to-back (JS
-   duplicates them) and loops by animating exactly -50% — the point where
-   the second copy lines up pixel-for-pixel with the first, so the loop is
-   seamless. Purely decorative, no interaction. */
-.feed-marquee{margin:0 -24px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent}
+/* feed row: cards paged with the two arrow buttons, 3 cards at a time
+   (.feed-nav__btn click handler below). Free swipe/drag still works —
+   it's a plain overflow-x:auto strip — but scrollbar-width/-webkit-scrollbar
+   hide the native bar since the arrows are now the visible control.
+   No -webkit-overflow-scrolling:touch here on purpose. */
+.feed-nav{position:relative}
+.feed-marquee{margin:0 -24px;overflow-x:auto;scroll-behavior:smooth;position:relative;scrollbar-width:none}
+.feed-marquee::-webkit-scrollbar{display:none}
 @media (min-width:860px){ .feed-marquee{margin-inline:-44px} }
 .feed-marquee::before, .feed-marquee::after{
   content:'';position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none;
 }
 .feed-marquee::before{left:0;background:linear-gradient(90deg, var(--bg), rgba(20,20,20,0))}
 .feed-marquee::after{right:0;background:linear-gradient(270deg, var(--bg), rgba(20,20,20,0))}
-.feed-marquee::-webkit-scrollbar{height:4px}
-.feed-marquee::-webkit-scrollbar-track{background:transparent}
-.feed-marquee::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:980px}
-.feed-marquee::-webkit-scrollbar-thumb:hover{background:var(--fg-dim)}
 .feed-track{display:flex;gap:16px;width:max-content;padding-inline:24px}
 @media (min-width:860px){ .feed-track{padding-inline:44px} }
+
+.feed-nav__btn{
+  position:absolute;top:50%;translate:0 -50%;z-index:3;width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;
+  background:rgba(20,20,20,.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--glass-border);color:var(--fg);
+  transition:box-shadow .25s ease,border-color .25s ease,background .25s ease,transform .15s ease;
+}
+.feed-nav__btn svg{width:18px;height:18px}
+.feed-nav__btn--prev{left:-4px}
+.feed-nav__btn--next{right:-4px}
+@media (min-width:860px){ .feed-nav__btn--prev{left:4px} .feed-nav__btn--next{right:4px} }
+.feed-nav__btn:hover, .feed-nav__btn:focus-visible{
+  border-color:var(--red-bright);box-shadow:0 0 0 1px var(--red-bright), 0 0 18px 2px var(--red-glow);
+}
+.feed-nav__btn:active{
+  background:rgba(228,253,151,.12);box-shadow:0 0 0 1px var(--red-bright), 0 0 28px 6px var(--red-glow);
+  transform:translateY(-50%) scale(.94);
+}
+.feed-nav__btn[disabled]{opacity:.3;pointer-events:none}
+@keyframes feed-nav-flash{
+  0%{box-shadow:0 0 0 1px var(--red-bright), 0 0 36px 10px var(--red-glow)}
+  100%{box-shadow:0 0 0 1px transparent, 0 0 0 0 rgba(228,253,151,0)}
+}
+.feed-nav__btn.flash{animation:feed-nav-flash .5s ease-out}
 .feed-card{
   flex:0 0 260px;width:260px;background:var(--bg-2);border:1px solid var(--glass-border);
   border-radius:18px;padding:22px 24px;user-select:none;display:flex;flex-direction:column;
@@ -517,6 +540,13 @@ footer{padding-block:40px}
 
     <div class="feed-wrap">
       <div class="sample-label">Так выглядят готовые материалы — 10 примеров из разных сфер, у вас будет под ваше направление</div>
+      <div class="feed-nav">
+        <button type="button" class="feed-nav__btn feed-nav__btn--prev" id="feedPrev" aria-label="Предыдущие карточки">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="feed-nav__btn feed-nav__btn--next" id="feedNext" aria-label="Следующие карточки">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       <div class="feed-marquee">
         <div class="feed-track" id="feedTrack">
           <div class="feed-card">
@@ -611,6 +641,7 @@ footer{padding-block:40px}
             <p class="feed-card-note">✨ Готовое предложение для партнёра — осталось отправить</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -819,6 +850,45 @@ footer{padding-block:40px}
     window.addEventListener('resize', function(){
       if(window.innerWidth >= 860) closeMenu();
     });
+  })();
+
+  // feed nav: arrow buttons page the sample-card row 3 cards at a time,
+  // with a neon flash on click; buttons disable themselves at either end
+  // instead of just scrolling past nothing.
+  (function(){
+    var track = document.getElementById('feedTrack');
+    var marquee = track ? track.closest('.feed-marquee') : null;
+    var prevBtn = document.getElementById('feedPrev');
+    var nextBtn = document.getElementById('feedNext');
+    if(!track || !marquee || !prevBtn || !nextBtn) return;
+
+    function pageWidth(){
+      var card = track.querySelector('.feed-card');
+      if(!card) return marquee.clientWidth;
+      var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
+      return (card.getBoundingClientRect().width + gap) * 3;
+    }
+    function flash(btn){
+      btn.classList.remove('flash');
+      void btn.offsetWidth;
+      btn.classList.add('flash');
+    }
+    function updateDisabled(){
+      var max = marquee.scrollWidth - marquee.clientWidth;
+      prevBtn.disabled = marquee.scrollLeft <= 4;
+      nextBtn.disabled = marquee.scrollLeft >= max - 4;
+    }
+    prevBtn.addEventListener('click', function(){
+      flash(prevBtn);
+      marquee.scrollBy({left: -pageWidth(), behavior:'smooth'});
+    });
+    nextBtn.addEventListener('click', function(){
+      flash(nextBtn);
+      marquee.scrollBy({left: pageWidth(), behavior:'smooth'});
+    });
+    marquee.addEventListener('scroll', updateDisabled, {passive:true});
+    window.addEventListener('resize', updateDisabled);
+    updateDisabled();
   })();
 
   // arriving directly at #privacy (e.g. the link in the bot's consent
