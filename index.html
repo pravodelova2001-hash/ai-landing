@@ -115,7 +115,11 @@ section{position:relative;padding-block:56px}
 h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margin:0}
 
 /* ---------- hero ---------- */
-.hero{min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding-block:80px}
+/* Фиксированные отступы вместо vh: на телефонах реальная высота экрана
+   "гуляет" из-за скрывающейся адресной строки — 86vh превращался в блок
+   заметно больше видимой области, отсюда пустота над и под текстом. */
+.hero{display:flex;flex-direction:column;justify-content:center;padding-block:110px 70px}
+@media (min-width:860px){ .hero{padding-block:150px 90px} }
 .hero .kicker{font-size:14px;letter-spacing:.08em;color:var(--red-bright);margin-bottom:22px;font-weight:600}
 .hero h1{font-size:clamp(2.8rem,9vw,6.6rem);line-height:1.02;max-width:18ch;letter-spacing:-.01em}
 .hero h1 .script{font-family:var(--font-script);font-weight:400;color:var(--red-bright);font-size:1.25em;line-height:1;display:inline-block;transform:rotate(-2deg)}
@@ -176,30 +180,48 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 .sample-post p:last-child{margin-bottom:0}
 .sample-tags{color:var(--red-bright)}
 
-/* card-stack "feed": front card straight, rest behind at a slight tilt;
-   click (desktop) or swipe (touch) sends the front card to the back of the
-   stack and the next one steps forward — cycles forever through all 4. */
-.feed{position:relative;height:405px;max-width:520px;margin:0 auto}
-.feed-card{
-  position:absolute;inset:0;background:var(--bg-2);border:1px solid var(--glass-border);
-  border-radius:18px;padding:24px 26px;cursor:pointer;user-select:none;
-  display:flex;flex-direction:column;transform-origin:75% 25%;
-  transition:transform .45s cubic-bezier(.22,.68,0,1),opacity .35s ease;
-  /* иначе на тач-устройствах наш свайп и нативный скролл страницы спорят
-     друг с другом — страницу дёргало при каждом смахивании карточки */
-  touch-action:pan-y;
+/* straight, sideways-flowing "feed" ribbon: cards scroll left forever at a
+   steady pace, no tilt. The track holds the 8 cards twice back-to-back (JS
+   duplicates them) and loops by animating exactly -50% — the point where
+   the second copy lines up pixel-for-pixel with the first, so the loop is
+   seamless. Clicking any card opens it full-size in a popup on top; the
+   ribbon itself is never paused, exactly as asked. */
+.feed-marquee{margin:0 -24px;overflow:hidden;position:relative}
+@media (min-width:860px){ .feed-marquee{margin-inline:-44px} }
+.feed-marquee::before, .feed-marquee::after{
+  content:'';position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none;
 }
+.feed-marquee::before{left:0;background:linear-gradient(90deg, var(--bg), rgba(20,20,20,0))}
+.feed-marquee::after{right:0;background:linear-gradient(270deg, var(--bg), rgba(20,20,20,0))}
+.feed-track{display:flex;gap:16px;width:max-content;padding-inline:24px;animation:feed-scroll 52s linear infinite}
+@media (min-width:860px){ .feed-track{padding-inline:44px} }
+.feed-card{
+  flex:0 0 260px;width:260px;background:var(--bg-2);border:1px solid var(--glass-border);
+  border-radius:18px;padding:22px 24px;cursor:pointer;user-select:none;display:flex;flex-direction:column;
+  transition:border-color .2s,transform .2s;
+}
+.feed-card:hover{border-color:var(--glass-border);transform:translateY(-3px)}
+@media (min-width:600px){ .feed-card{flex-basis:300px;width:300px} }
+@keyframes feed-scroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .feed-card-tag{font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:12px}
 .feed-card-note{margin:12px 0 0;font-size:.82rem;color:var(--red-bright);font-weight:600}
-.feed-card[data-pos="0"]{transform:translate(0,0) rotate(0deg) scale(1);z-index:4;opacity:1}
-.feed-card[data-pos="1"]{transform:translate(14px,14px) rotate(-5deg) scale(.95);z-index:3;opacity:.85;pointer-events:none}
-.feed-card[data-pos="2"]{transform:translate(22px,24px) rotate(-8deg) scale(.9);z-index:2;opacity:.35;pointer-events:none}
-.feed-card[data-pos="3"]{transform:translate(28px,32px) rotate(-10deg) scale(.86);z-index:1;opacity:0;pointer-events:none}
-.feed-card.leaving{transition:transform .35s ease,opacity .3s ease;transform:translateX(90px) rotate(10deg) scale(.92) !important;opacity:0 !important}
 .feed-hint{margin-top:18px;text-align:center;font-size:.82rem;color:var(--fg-dim)}
-@media (max-width:480px){
-  .feed{height:525px}
+
+/* popup: the clicked card "pops up" full-size on top, ribbon keeps scrolling
+   behind it. Closes on backdrop click, clicking the popup itself, or Esc. */
+.feed-popup-overlay{
+  position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(10,10,10,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .25s ease;
 }
+.feed-popup-overlay[data-open="true"]{opacity:1;pointer-events:auto}
+.feed-popup{
+  width:100%;max-width:420px;cursor:pointer;position:relative;
+  transform:scale(.92);transition:transform .25s ease;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.8);
+}
+.feed-popup-overlay[data-open="true"] .feed-popup{transform:scale(1)}
+.feed-popup-close{position:absolute;top:18px;right:20px;color:var(--fg-dim);font-size:1.1rem;line-height:1}
 
 /* ---------- why-subscription cards ---------- */
 .whygrid{margin-top:40px;display:grid;gap:14px}
@@ -232,7 +254,7 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
   .team-member{display:contents}
 }
 .team-member{max-width:320px;text-align:center}
-.team-member .role-tag, .team-member blockquote, .team-member .who, .team-member .placeholder-note{text-align:left}
+.team-member .role-tag, .team-member blockquote, .team-member .who{text-align:left}
 
 .badge-wrap{
   display:flex;flex-direction:column;align-items:center;width:180px;max-width:180px;margin:0 auto 24px;
@@ -293,7 +315,6 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 .about blockquote{font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.35;margin:0;font-weight:700}
 .about blockquote .script{font-family:var(--font-script);color:var(--red-bright);font-size:1.15em}
 .about .who{margin-top:22px;color:var(--fg-dim);font-size:.98rem;font-family:var(--font-body)}
-.placeholder-note{margin-top:20px;font-size:12.5px;color:var(--fg-dim);border-left:2px solid var(--red);padding-left:14px;font-family:var(--font-body)}
 .bio{margin-top:18px}
 .bio-toggle{background:none;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--red-bright);font-family:var(--font-body);font-size:.9rem;font-weight:600}
 .bio-toggle .plus{font-size:1.2rem;font-weight:400;transition:transform .3s}
@@ -411,7 +432,6 @@ footer{padding-block:40px}
           <button type="button" class="bio-toggle" aria-expanded="false">Читать историю<span class="plus">+</span></button>
           <div class="a">
             <div class="who">Моя цель — помочь людям освоиться в AI: без технического бэкграунда, без страха что-то сломать и без лишней спешки. Для меня важно, чтобы это было комфортно и безопасно — шаг за шагом, а не рывком.</div>
-            <div class="placeholder-note">Фото — пока заглушка, вставим, когда решишь.</div>
           </div>
         </div>
       </div>
@@ -443,7 +463,6 @@ footer{padding-block:40px}
           <button type="button" class="bio-toggle" aria-expanded="false">Читать историю<span class="plus">+</span></button>
           <div class="a">
             <div class="who">Юля — лидер коммуникации в команде: она на связи с клиентами и готова ответить на любой вопрос по подписке, не отмахиваясь и не затягивая.</div>
-            <div class="placeholder-note">Фото — пока заглушка, вставим, когда решите.</div>
           </div>
         </div>
       </div>
@@ -514,87 +533,98 @@ footer{padding-block:40px}
 
     <div class="feed-wrap">
       <div class="sample-label">Так выглядят готовые материалы — примеры из разных сфер, у вас будет под вашу</div>
-      <div class="feed" id="feed">
-        <div class="feed-card" data-module="content">
-          <div class="feed-card-tag">Контент</div>
-          <div class="sample-post">
-            <p>Ламинирование ресниц до Нового года — успейте, пока есть свободные окна 🎄</p>
-            <p>Эффект держится 6–8 недель: ресницы выглядят ухоженно даже без туши.</p>
-            <p>✅ Без вреда для натуральных ресниц<br>✅ Результат виден сразу<br>✅ Подходит для чувствительных глаз</p>
-            <p class="sample-tags">Запись — в директ или по ссылке в шапке</p>
+      <div class="feed-marquee">
+        <div class="feed-track" id="feedTrack">
+          <div class="feed-card" data-idx="0" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Контент</div>
+            <div class="sample-post">
+              <p>Ламинирование ресниц до Нового года — успейте, пока есть свободные окна 🎄</p>
+              <p>Эффект держится 6–8 недель: ресницы выглядят ухоженно даже без туши.</p>
+              <p>✅ Без вреда для натуральных ресниц<br>✅ Результат виден сразу<br>✅ Подходит для чувствительных глаз</p>
+              <p class="sample-tags">Запись — в директ или по ссылке в шапке</p>
+            </div>
+            <p class="feed-card-note">✨ Под вашу услугу, тон и сезон — не универсальный текст из интернета</p>
           </div>
-          <p class="feed-card-note">✨ Под вашу услугу, тон и сезон — не универсальный текст из интернета</p>
-        </div>
-        <div class="feed-card" data-module="content">
-          <div class="feed-card-tag">Контент</div>
-          <div class="sample-post">
-            <p>Тыквенный раф возвращается — и только до конца ноября 🍂</p>
-            <p>Согревает в любую погоду, отлично заходит с корицей сверху.</p>
-            <p>✅ На цельном молоке<br>✅ Можно взять с собой<br>✅ Подписчикам — скидка 10% по промокоду</p>
-            <p class="sample-tags">Ждём вас с 8:00 до 21:00</p>
+          <div class="feed-card" data-idx="1" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Контент</div>
+            <div class="sample-post">
+              <p>Тыквенный раф возвращается — и только до конца ноября 🍂</p>
+              <p>Согревает в любую погоду, отлично заходит с корицей сверху.</p>
+              <p>✅ На цельном молоке<br>✅ Можно взять с собой<br>✅ Подписчикам — скидка 10% по промокоду</p>
+              <p class="sample-tags">Ждём вас с 8:00 до 21:00</p>
+            </div>
+            <p class="feed-card-note">✨ Учитывает сезон и то, что вы уже публиковали — не повторяется</p>
           </div>
-          <p class="feed-card-note">✨ Учитывает сезон и то, что вы уже публиковали — не повторяется</p>
-        </div>
-        <div class="feed-card" data-module="clients">
-          <div class="feed-card-tag">Клиенты</div>
-          <div class="sample-post">
-            <p>Здравствуйте!</p>
-            <p>Диагностика подвески — 1 500 ₽, займёт около часа.</p>
-            <p>Ближайшая запись — сегодня в 17:00 или завтра утром, что удобнее?</p>
-            <p>Если уже знаете, где стучит или шумит — напишите, учтём при осмотре.</p>
+          <div class="feed-card" data-idx="2" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Клиенты</div>
+            <div class="sample-post">
+              <p>Здравствуйте!</p>
+              <p>Диагностика подвески — 1 500 ₽, займёт около часа.</p>
+              <p>Ближайшая запись — сегодня в 17:00 или завтра утром, что удобнее?</p>
+              <p>Если уже знаете, где стучит или шумит — напишите, учтём при осмотре.</p>
+            </div>
+            <p class="feed-card-note">✨ Подстраивается под ваш график записи и манеру общения</p>
           </div>
-          <p class="feed-card-note">✨ Подстраивается под ваш график записи и манеру общения</p>
-        </div>
-        <div class="feed-card" data-module="clients">
-          <div class="feed-card-tag">Клиенты</div>
-          <div class="sample-post">
-            <p>Привет! 💪</p>
-            <p>Пробное занятие — бесплатно, нужно только выбрать удобное время.</p>
-            <p>Сегодня есть места на 19:00 (группа) и 20:00 (персонально).</p>
-            <p>Какой формат вам ближе — расскажу подробнее!</p>
+          <div class="feed-card" data-idx="3" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Клиенты</div>
+            <div class="sample-post">
+              <p>Привет! 💪</p>
+              <p>Пробное занятие — бесплатно, нужно только выбрать удобное время.</p>
+              <p>Сегодня есть места на 19:00 (группа) и 20:00 (персонально).</p>
+              <p>Какой формат вам ближе — расскажу подробнее!</p>
+            </div>
+            <p class="feed-card-note">✨ Отвечает в вашем тоне — от делового до неформального</p>
           </div>
-          <p class="feed-card-note">✨ Отвечает в вашем тоне — от делового до неформального</p>
-        </div>
-        <div class="feed-card" data-module="docs">
-          <div class="feed-card-tag">Документы</div>
-          <div class="sample-post">
-            <p><b>Коммерческое предложение — генеральная уборка офиса</b></p>
-            <p>Здравствуйте, Дмитрий! Предлагаем разовую генеральную уборку офиса 120 м² бригадой из 3 человек.</p>
-            <p>Что входит: мытьё окон, химчистка мебели, уборка санузлов, вывоз мусора.</p>
-            <p class="sample-tags">12 000 ₽ · выполнение в течение 2 дней</p>
+          <div class="feed-card" data-idx="4" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Документы</div>
+            <div class="sample-post">
+              <p><b>Коммерческое предложение — генеральная уборка офиса</b></p>
+              <p>Здравствуйте, Дмитрий! Предлагаем разовую генеральную уборку офиса 120 м² бригадой из 3 человек.</p>
+              <p>Что входит: мытьё окон, химчистка мебели, уборка санузлов, вывоз мусора.</p>
+              <p class="sample-tags">12 000 ₽ · выполнение в течение 2 дней</p>
+            </div>
+            <p class="feed-card-note">✨ Аргументы и структура — под вашу нишу и клиента</p>
           </div>
-          <p class="feed-card-note">✨ Аргументы и структура — под вашу нишу и клиента</p>
-        </div>
-        <div class="feed-card" data-module="docs">
-          <div class="feed-card-tag">Документы</div>
-          <div class="sample-post">
-            <p><b>Счёт на оплату — ремонт стиральной машины</b></p>
-            <p>Выполненные работы: диагностика, замена подшипника, проверка после ремонта.</p>
-            <p>Итого: 3 400 ₽ (детали — 2 200 ₽, работа — 1 200 ₽)</p>
-            <p class="sample-tags">Гарантия на работу — 3 месяца</p>
+          <div class="feed-card" data-idx="5" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Документы</div>
+            <div class="sample-post">
+              <p><b>Счёт на оплату — ремонт стиральной машины</b></p>
+              <p>Выполненные работы: диагностика, замена подшипника, проверка после ремонта.</p>
+              <p>Итого: 3 400 ₽ (детали — 2 200 ₽, работа — 1 200 ₽)</p>
+              <p class="sample-tags">Гарантия на работу — 3 месяца</p>
+            </div>
+            <p class="feed-card-note">✨ Формат и детали — под то, как у вас принято оформлять</p>
           </div>
-          <p class="feed-card-note">✨ Формат и детали — под то, как у вас принято оформлять</p>
-        </div>
-        <div class="feed-card" data-module="ideas">
-          <div class="feed-card-tag">Идеи</div>
-          <div class="sample-post">
-            <p class="sample-tags">Промпт для AI:</p>
-            <p>«Ты — маркетолог кондитерской. Предложи 5 тем постов к Новому году: от тортов на заказ до историй с кухни — заголовок и фраза, почему это зайдёт именно сейчас».</p>
+          <div class="feed-card" data-idx="6" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Идеи</div>
+            <div class="sample-post">
+              <p class="sample-tags">Промпт для AI:</p>
+              <p>«Ты — маркетолог кондитерской. Предложи 5 тем постов к Новому году: от тортов на заказ до историй с кухни — заголовок и фраза, почему это зайдёт именно сейчас».</p>
+            </div>
+            <p class="feed-card-note">✨ 5 готовых идей за секунды вместо часа мозгового штурма</p>
           </div>
-          <p class="feed-card-note">✨ 5 готовых идей за секунды вместо часа мозгового штурма</p>
-        </div>
-        <div class="feed-card" data-module="ideas">
-          <div class="feed-card-tag">Идеи</div>
-          <div class="sample-post">
-            <p class="sample-tags">Промпт для AI:</p>
-            <p>«Ты — маркетолог цветочного магазина. Предложи 5 поводов для постов на ближайший месяц, помимо праздников — сезонные цветы, уходовые советы, личные события клиентов».</p>
+          <div class="feed-card" data-idx="7" tabindex="0" role="button" aria-label="Открыть пример целиком">
+            <div class="feed-card-tag">Идеи</div>
+            <div class="sample-post">
+              <p class="sample-tags">Промпт для AI:</p>
+              <p>«Ты — маркетолог цветочного магазина. Предложи 5 поводов для постов на ближайший месяц, помимо праздников — сезонные цветы, уходовые советы, личные события клиентов».</p>
+            </div>
+            <p class="feed-card-note">✨ Подбирает темы, которые вы бы сами не сразу вспомнили</p>
           </div>
-          <p class="feed-card-note">✨ Подбирает темы, которые вы бы сами не сразу вспомнили</p>
         </div>
       </div>
       <p class="feed-hint">Нажмите на карточку</p>
     </div>
   </section>
+
+  <div class="feed-popup-overlay" id="feedPopupOverlay" data-open="false">
+    <div class="feed-popup glass" id="feedPopup" tabindex="0" role="button" aria-label="Закрыть пример">
+      <span class="feed-popup-close" aria-hidden="true">✕</span>
+      <div class="feed-card-tag" id="feedPopupTag"></div>
+      <div class="sample-post" id="feedPopupBody"></div>
+      <p class="feed-card-note" id="feedPopupNote"></p>
+    </div>
+  </div>
 
   <section id="base">
     <div class="kicker2">Входит в любую подписку</div>
@@ -885,57 +915,57 @@ footer{padding-block:40px}
     update();
   })();
 
-  // ---- examples "feed": card stack, click/swipe cycles the front card to
-  // the back and the next one steps forward (loops forever through all 8) ----
+  // ---- examples "feed": a straight ribbon that scrolls sideways forever
+  // (pure CSS animation on .feed-track). The track is duplicated once here
+  // so the loop is seamless — see the CSS for why -50% is the magic number.
+  // Clicking any card pops it up full-size on top; the ribbon is never
+  // paused, it keeps scrolling behind the popup the whole time. ----
   (function(){
-    var feed = document.getElementById('feed');
-    if(!feed) return;
-    var cards = Array.prototype.slice.call(feed.querySelectorAll('.feed-card'));
-    var order = cards.map(function(_, i){ return i; });
-    var counterEl = document.getElementById('feedCounter');
-    var current = 1;
+    var track = document.getElementById('feedTrack');
+    var overlay = document.getElementById('feedPopupOverlay');
+    if(!track || !overlay) return;
+    track.innerHTML += track.innerHTML;
 
-    function layout(){
-      order.forEach(function(cardIndex, pos){
-        // Только 0/1/2 различаются визуально (прямая + 2 внахлёст позади),
-        // всё остальное прячется в ту же невидимую позицию — так стопка
-        // выглядит одинаково аккуратно и на 4, и на 8 карточках.
-        cards[cardIndex].setAttribute('data-pos', Math.min(pos, 3));
-      });
-      if (counterEl) counterEl.textContent = current + ' / ' + cards.length;
+    var popup = document.getElementById('feedPopup');
+    var popupTag = document.getElementById('feedPopupTag');
+    var popupBody = document.getElementById('feedPopupBody');
+    var popupNote = document.getElementById('feedPopupNote');
+    var openIdx = null;
+
+    function openCard(card){
+      openIdx = card.dataset.idx;
+      popupTag.textContent = card.querySelector('.feed-card-tag').textContent;
+      popupBody.innerHTML = card.querySelector('.sample-post').innerHTML;
+      popupNote.textContent = card.querySelector('.feed-card-note').textContent;
+      overlay.setAttribute('data-open', 'true');
     }
-    layout();
-
-    var advancing = false;
-    function advance(){
-      if(advancing) return;
-      advancing = true;
-      var frontEl = cards[order[0]];
-      frontEl.classList.add('leaving');
-      setTimeout(function(){
-        order.push(order.shift());
-        current = current % cards.length + 1;
-        layout();
-        frontEl.classList.remove('leaving');
-        advancing = false;
-      }, 320);
+    function closeCard(){
+      openIdx = null;
+      overlay.setAttribute('data-open', 'false');
     }
 
-    cards.forEach(function(card){
-      card.addEventListener('click', function(){
-        if(card.getAttribute('data-pos') === '0') advance();
-      });
-      var startX = 0, startY = 0;
-      card.addEventListener('touchstart', function(e){
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      }, {passive:true});
-      card.addEventListener('touchend', function(e){
-        if(card.getAttribute('data-pos') !== '0') return;
-        var dx = e.changedTouches[0].clientX - startX;
-        var dy = e.changedTouches[0].clientY - startY;
-        if(Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) advance();
-      }, {passive:true});
+    track.addEventListener('click', function(e){
+      var card = e.target.closest('.feed-card');
+      if(!card) return;
+      if(overlay.getAttribute('data-open') === 'true' && card.dataset.idx === openIdx) closeCard();
+      else openCard(card);
+    });
+    track.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter' && e.key !== ' ') return;
+      var card = e.target.closest('.feed-card');
+      if(!card) return;
+      e.preventDefault();
+      openCard(card);
+    });
+    popup.addEventListener('click', closeCard);
+    popup.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); closeCard(); }
+    });
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay) closeCard();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeCard();
     });
   })();
 
@@ -959,6 +989,19 @@ footer{padding-block:40px}
   }
 
   gsap.registerPlugin(ScrollTrigger);
+  // Мобильный Safari/Chrome меняют реальную высоту вьюпорта на лету, когда
+  // скрывается/появляется адресная строка — без этой настройки ScrollTrigger
+  // на каждое такое микро-изменение пересчитывает все триггеры заново и может
+  // "потерять" точку срабатывания для секций ниже по странице (тогда они
+  // остаются невидимыми навсегда — это и был источник пустых мест).
+  ScrollTrigger.config({ ignoreMobileResize: true });
+  // Шрифты (Google Fonts) дозагружаются чуть позже, чем ScrollTrigger
+  // в первый раз меряет позиции секций — другая высота строк сдвигает всё,
+  // что ниже, и триггеры "уезжают" от реальных границ секций. Пересчитываем
+  // точки срабатывания, как только шрифты реально подставились.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+  }
 
   try {
     // signature moment: headline resolves from a soft blur, script word
@@ -997,17 +1040,26 @@ footer{padding-block:40px}
       ['#faq', '.kicker2, .lede, .q'],
       ['.cta-final', '.kicker2, h2, p, .hero-cta']
     ];
+    var allRevealTargets = [];
     revealGroups.forEach(function(group){
       var sec = document.querySelector(group[0]);
       if(!sec) return;
       var targets = sec.querySelectorAll(group[1]);
       if(!targets.length) return;
+      allRevealTargets.push.apply(allRevealTargets, targets);
       gsap.set(targets, {opacity:0, y:20});
       gsap.to(targets, {
         opacity:1, y:0, duration:.7, stagger:.06, ease:'power2.out',
         scrollTrigger:{ trigger:sec, start:'top 80%', once:true }
       });
     });
+    // Страховка: если на каком-то устройстве триггер всё равно не сработает
+    // (пропущенный скролл-ивент, рассинхрон после ресайза и т.п.) — секция
+    // не должна остаться пустой/невидимой навсегда. Просто доводим всё до
+    // видимого состояния через несколько секунд, если оно ещё не наступило.
+    setTimeout(function(){
+      gsap.to(allRevealTargets, {opacity:1, y:0, duration:.4});
+    }, 3500);
   } catch(e){
     document.querySelectorAll('#heroH1, #heroH1 .script, .hero p, .hero-cta, .hero .kicker, .hero-price').forEach(function(el){
       el.style.opacity='1'; el.style.filter='none'; el.style.transform='none';
