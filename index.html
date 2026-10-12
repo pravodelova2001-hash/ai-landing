@@ -217,10 +217,12 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
 .feed-popup-overlay[data-open="true"]{opacity:1;pointer-events:auto}
 .feed-popup{
   width:100%;max-width:420px;cursor:pointer;position:relative;
+  padding:52px 26px 28px;
   transform:scale(.92);transition:transform .25s ease;
   box-shadow:0 30px 60px -20px rgba(0,0,0,.8);
 }
 .feed-popup-overlay[data-open="true"] .feed-popup{transform:scale(1)}
+.feed-popup .sample-post{margin-top:2px}
 .feed-popup-close{position:absolute;top:18px;right:20px;color:var(--fg-dim);font-size:1.1rem;line-height:1}
 
 /* ---------- why-subscription cards ---------- */
