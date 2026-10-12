@@ -186,21 +186,20 @@ h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margi
    duplicates them) and loops by animating exactly -50% — the point where
    the second copy lines up pixel-for-pixel with the first, so the loop is
    seamless. Purely decorative, no interaction. */
-.feed-marquee{margin:0 -24px;overflow:hidden;position:relative}
+.feed-marquee{margin:0 -24px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
 @media (min-width:860px){ .feed-marquee{margin-inline:-44px} }
 .feed-marquee::before, .feed-marquee::after{
   content:'';position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none;
 }
 .feed-marquee::before{left:0;background:linear-gradient(90deg, var(--bg), rgba(20,20,20,0))}
 .feed-marquee::after{right:0;background:linear-gradient(270deg, var(--bg), rgba(20,20,20,0))}
-.feed-track{display:flex;gap:16px;width:max-content;padding-inline:24px;animation:feed-scroll 52s linear infinite}
+.feed-track{display:flex;gap:16px;width:max-content;padding-inline:24px}
 @media (min-width:860px){ .feed-track{padding-inline:44px} }
 .feed-card{
   flex:0 0 260px;width:260px;background:var(--bg-2);border:1px solid var(--glass-border);
   border-radius:18px;padding:22px 24px;user-select:none;display:flex;flex-direction:column;
 }
 @media (min-width:600px){ .feed-card{flex-basis:300px;width:300px} }
-@keyframes feed-scroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .feed-card-tag{font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:12px}
 .feed-card-note{margin:12px 0 0;font-size:.82rem;color:var(--red-bright);font-weight:600}
 
@@ -372,7 +371,7 @@ footer{padding-block:40px}
 <main class="wrap">
 
   <section class="hero">
-    <div class="kicker">AI-подписка без привязки к нише</div>
+    <div class="kicker">AI-подписка для любого направления бизнеса</div>
     <h1 id="heroH1">Работает для <span class="script">любого</span> бизнеса</h1>
     <p>Контент, переписка с клиентами, документы и идеи — всё в одной подписке. Настраивается под вас, а не под шаблон.</p>
     <div class="hero-cta">
@@ -408,7 +407,7 @@ footer{padding-block:40px}
           </div>
           <div class="badge-hint">Переверните</div>
         </div>
-        <blockquote>«Я — Валерия, независимый AI-консультант. Помогаю малому бизнесу <span class="script">внедрять</span> AI-инструменты для рутинных задач — без привязки к одной нише.»</blockquote>
+        <blockquote>«Я — Валерия, независимый AI-консультант. Помогаю малому бизнесу <span class="script">внедрять</span> AI-инструменты для рутинных задач — без привязки к одному направлению.»</blockquote>
         <div class="bio" data-open="false">
           <button type="button" class="bio-toggle" aria-expanded="false">Читать историю<span class="plus">+</span></button>
           <div class="a">
@@ -474,15 +473,15 @@ footer{padding-block:40px}
       <div class="mod glass lift" data-mod="clients" role="button" tabindex="0" aria-pressed="false">
         <div class="mod-check" aria-hidden="true"></div>
         <h3>Клиенты</h3>
-        <p>Шаблоны ответов, авто-реакции на типовые вопросы и напоминания для переписки с клиентами.</p>
+        <p>Готовые ответы на частые вопросы и напоминания о записи для переписки с клиентами.</p>
         <ul><li>6 готовых ответов на частые вопросы</li><li>Шаблоны под тон переписки</li></ul>
         <div class="mod-value">Экономит ориентировочно 2–3 часа в месяц на переписке с повторяющимися вопросами</div>
       </div>
       <div class="mod glass lift" data-mod="docs" role="button" tabindex="0" aria-pressed="false">
         <div class="mod-check" aria-hidden="true"></div>
         <h3>Документы</h3>
-        <p>Шаблоны регламентов, коммерческих предложений и чек-листов, адаптированные под ваше направление.</p>
-        <ul><li>Коммерческое предложение</li><li>Письмо-напоминание об оплате</li><li>Чек-лист старта работы</li></ul>
+        <p>Шаблоны коммерческих предложений, счетов и чек-листов, адаптированные под ваше направление.</p>
+        <ul><li>Коммерческое предложение</li><li>Счёт на оплату</li><li>Письмо-напоминание об оплате</li><li>Чек-лист старта работы</li></ul>
         <div class="mod-value">Экономит часы, которые иначе уходят на то, чтобы собирать документы с нуля каждый раз</div>
       </div>
       <div class="mod glass lift" data-mod="ideas" role="button" tabindex="0" aria-pressed="false">
@@ -564,7 +563,7 @@ footer{padding-block:40px}
               <p>Что входит: мытьё окон, химчистка мебели, уборка санузлов, вывоз мусора.</p>
               <p class="sample-tags">12 000 ₽ · выполнение в течение 2 дней</p>
             </div>
-            <p class="feed-card-note">✨ Аргументы и структура — под вашу нишу и клиента</p>
+            <p class="feed-card-note">✨ Аргументы и структура — под ваше направление и клиента</p>
           </div>
           <div class="feed-card">
             <div class="feed-card-tag">Документы</div>
@@ -886,15 +885,6 @@ footer{padding-block:40px}
     update();
   })();
 
-  // ---- examples "feed": a straight ribbon that scrolls sideways forever
-  // (pure CSS animation on .feed-track). The track is duplicated once here
-  // so the loop is seamless — see the CSS for why -50% is the magic number.
-  // Purely decorative, no click interaction. ----
-  (function(){
-    var track = document.getElementById('feedTrack');
-    if(!track) return;
-    track.innerHTML += track.innerHTML;
-  })();
 
   function countUp(el, to, dur){
     var t0=null;
