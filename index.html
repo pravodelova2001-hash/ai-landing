@@ -1,0 +1,1020 @@
+<title>Быстрый старт с AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&family=Marck+Script&display=swap">
+<style>
+/* ===================================================================
+   Glass-premium language, per the reference the user sent: bold serif
+   caps + a flowing script accent word, Inter for body, near-black
+   ground (#141414), translucent blurred glass cards with a soft hover
+   lift everywhere a "panel" appears — no hard edges, no HUD chrome.
+   Single committed dark world.
+   =================================================================== */
+:root{
+  --bg:#141414;
+  --bg-2:#1A1A1A;
+  --glass:rgba(255,255,255,.045);
+  --glass-strong:rgba(255,255,255,.07);
+  --glass-border:rgba(255,255,255,.09);
+  --fg:#F6F5F2;
+  --fg-dim:#9B9B96;
+  --red:#C7E86B;
+  --red-bright:#E4FD97;
+  --red-glow:rgba(228,253,151,.4);
+  --on-accent:#14160C;
+  color-scheme:dark;
+  --font-display:'Playfair Display',serif;
+  --font-script:'Marck Script',cursive;
+  --font-body:'Inter',sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+::selection{background:var(--red);color:var(--on-accent)}
+a{color:inherit;text-decoration:none}
+a:focus-visible, button:focus-visible, .mod:focus-visible, .q button:focus-visible,
+.badge-flip:focus-visible, .feed-card:focus-visible, .bio-toggle:focus-visible{
+  outline:2px solid var(--red-bright);outline-offset:3px;border-radius:4px;
+}
+img{max-width:100%}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:24px}
+@media (min-width:860px){ .wrap{padding-inline:44px} }
+.tabular{font-variant-numeric:tabular-nums}
+
+.glass{
+  background:rgba(255,255,255,.065);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:22px;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 16px 40px -24px rgba(0,0,0,.7);
+  transition:transform .3s cubic-bezier(.2,.8,.2,1), background .3s, border-color .3s, box-shadow .3s;
+}
+.glass.lift{will-change:transform}
+.glass.lift:hover{
+  transform:translateY(-6px);
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.22);
+  box-shadow:0 16px 32px -16px rgba(0,0,0,.6);
+}
+.glass.lift:active{transform:translateY(-2px) scale(.99)}
+.btn:active{transform:scale(.95)}
+
+/* ---------- scroll progress rail ---------- */
+.rail{position:fixed;top:0;left:0;width:100%;height:3px;z-index:50;background:rgba(255,255,255,.06)}
+.rail-fill{height:100%;width:100%;background:linear-gradient(90deg, var(--red), var(--red-bright));transform:scaleX(0);transform-origin:left center}
+section > *{position:relative;z-index:1}
+
+/* ---------- nav ---------- */
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;padding-top:14px}
+.bar-inner{
+  display:flex;align-items:center;justify-content:space-between;padding:12px 22px;
+  background:rgba(20,20,20,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:980px;
+}
+.mark{font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.mark-icon{flex-shrink:0}
+@media (max-width:420px){ .mark{font-size:13.5px;gap:7px} .bar-inner{padding:10px 14px} }
+.bar nav{display:none;gap:28px;font-size:13.5px;color:var(--fg-dim)}
+@media (min-width:860px){ .bar nav{display:flex} }
+.bar nav a:hover{color:var(--fg)}
+
+.bar-right{display:flex;align-items:center;gap:10px}
+/* burger: mobile-only stand-in for the nav links hidden below 860px */
+.burger{
+  display:flex;align-items:center;justify-content:center;width:38px;height:38px;flex-shrink:0;
+  border:1px solid var(--glass-border);border-radius:50%;background:var(--glass);cursor:pointer;
+}
+@media (min-width:860px){ .burger{display:none} }
+.burger-icon{width:16px;height:11px;position:relative}
+.burger-icon span{position:absolute;left:0;width:100%;height:1.5px;background:var(--fg);border-radius:1px;transition:transform .25s ease,opacity .2s ease,top .25s ease}
+.burger-icon span:nth-child(1){top:0}
+.burger-icon span:nth-child(2){top:4.75px}
+.burger-icon span:nth-child(3){top:9.5px}
+.burger[aria-expanded="true"] .burger-icon span:nth-child(1){top:4.75px;transform:rotate(45deg)}
+.burger[aria-expanded="true"] .burger-icon span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] .burger-icon span:nth-child(3){top:4.75px;transform:rotate(-45deg)}
+
+.bar .mobile-nav{
+  display:none;flex-direction:column;gap:4px;margin-top:8px;padding:10px;
+  background:rgba(20,20,20,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:20px;
+}
+.bar .mobile-nav[data-open="true"]{display:flex}
+@media (min-width:860px){ .mobile-nav{display:none !important} }
+.mobile-nav a{padding:12px 14px;border-radius:12px;font-size:.95rem;color:var(--fg-dim)}
+.mobile-nav a:active{background:var(--glass);color:var(--fg)}
+.btn{font-size:13.5px;font-weight:600;padding:10px 20px;border-radius:980px;display:inline-flex;align-items:center;white-space:nowrap}
+.btn-red{background:var(--red);color:var(--on-accent);font-weight:700;transition:transform .25s ease,box-shadow .25s,background .25s}
+.btn-red:hover{background:var(--red-bright);transform:translateY(-2px) scale(1.02);box-shadow:0 14px 30px -10px var(--red-glow)}
+.btn-line{border:1px solid var(--glass-border);color:var(--fg);background:var(--glass)}
+.btn-line:hover{border-color:var(--red);color:var(--red-bright)}
+
+section{position:relative;padding-block:56px}
+@media (min-width:860px){ section{padding-block:88px} }
+h1,h2,h3{font-family:var(--font-display);font-weight:800;text-wrap:balance;margin:0}
+
+/* ---------- hero ---------- */
+.hero{min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding-block:80px}
+.hero .kicker{font-size:14px;letter-spacing:.08em;color:var(--red-bright);margin-bottom:22px;font-weight:600}
+.hero h1{font-size:clamp(2.8rem,9vw,6.6rem);line-height:1.02;max-width:18ch;letter-spacing:-.01em}
+.hero h1 .script{font-family:var(--font-script);font-weight:400;color:var(--red-bright);font-size:1.25em;line-height:1;display:inline-block;transform:rotate(-2deg)}
+.hero p{margin-top:30px;max-width:42ch;color:var(--fg-dim);font-size:1.15rem}
+.hero-cta{margin-top:36px;display:flex;gap:14px;flex-wrap:wrap}
+.hero-price{margin-top:18px;font-size:.9rem;color:var(--fg-dim)}
+.hero-price b{color:var(--red-bright);font-family:var(--font-display);font-size:1.05em}
+
+/* ---------- section heads ---------- */
+.kicker2{font-size:14px;letter-spacing:.06em;color:var(--red-bright);font-weight:600;margin-bottom:18px}
+.lede{font-size:clamp(1.9rem,3.6vw,2.8rem);max-width:19ch;line-height:1.15}
+.whofor{color:var(--fg-dim);font-size:1.1rem;margin-top:24px;max-width:62ch;line-height:1.7;font-family:var(--font-body)}
+.whofor b{color:var(--fg);font-weight:600}
+
+/* ---------- modules: clickable glass cards ---------- */
+.modgrid{margin-top:40px;display:grid;gap:14px}
+@media (min-width:720px){ .modgrid{grid-template-columns:1fr 1fr} }
+.mod{padding:28px 26px;cursor:pointer;user-select:none;position:relative}
+.mod[aria-pressed="true"]{border-color:var(--red-bright);background:rgba(228,253,151,.08)}
+.mod-check{
+  position:absolute;top:24px;right:24px;width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--glass-border);transition:background .2s,border-color .2s;
+}
+.mod[aria-pressed="true"] .mod-check{background:var(--red-bright);border-color:var(--red-bright)}
+.mod[aria-pressed="true"] .mod-check::after{
+  content:'';position:absolute;left:7px;top:3px;width:5px;height:9px;
+  border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(40deg);
+}
+.mod h3{font-size:1.4rem;padding-right:34px}
+.mod p{color:var(--fg-dim);margin-top:12px;font-size:.96rem;font-family:var(--font-body)}
+.mod ul{margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.mod li{font-size:.9rem;color:var(--fg-dim);padding-left:18px;position:relative;font-family:var(--font-body)}
+.mod li::before{content:'';position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--red)}
+.mod-value{margin-top:14px;padding-top:12px;border-top:1px solid var(--glass-border);font-size:.84rem;color:var(--red-bright);font-weight:600}
+
+/* ---------- live calculator ---------- */
+.calc{
+  margin-top:20px;padding:26px 28px;display:flex;flex-wrap:wrap;gap:20px;
+  align-items:center;justify-content:space-between;
+}
+.calc-label{font-size:12.5px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.05em}
+.calc-mods{font-family:var(--font-display);font-size:1.15rem;margin-top:4px;min-height:1.4em}
+.calc-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.calc-price{font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:var(--red-bright);white-space:nowrap}
+.calc-price small{font-size:.5em;color:var(--fg-dim);font-weight:400;font-family:var(--font-body)}
+
+/* ---------- individual package: alternative to the 4 modules ---------- */
+.indiv{margin-top:20px;padding:26px 28px;text-align:center;border-style:dashed}
+.indiv h3{font-size:1.15rem;margin-bottom:8px}
+.indiv p{color:var(--fg-dim);font-size:.92rem;max-width:52ch;margin:0 auto 18px}
+.indiv .calc-price{margin-bottom:18px}
+
+/* ---------- sample content: real templates, not just a promise ---------- */
+.feed-wrap{margin-top:20px}
+.sample-label{font-size:12.5px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;text-align:center}
+.sample-post{background:var(--bg);border:1px solid var(--glass-border);border-radius:14px;padding:18px 20px;font-size:.92rem;line-height:1.6;font-family:var(--font-body);flex:1;overflow:hidden}
+.sample-post p{margin:0 0 10px}
+.sample-post p:last-child{margin-bottom:0}
+.sample-tags{color:var(--red-bright)}
+
+/* card-stack "feed": front card straight, rest behind at a slight tilt;
+   click (desktop) or swipe (touch) sends the front card to the back of the
+   stack and the next one steps forward — cycles forever through all 4. */
+.feed{position:relative;height:405px;max-width:520px;margin:0 auto}
+.feed-card{
+  position:absolute;inset:0;background:var(--bg-2);border:1px solid var(--glass-border);
+  border-radius:18px;padding:24px 26px;cursor:pointer;user-select:none;
+  display:flex;flex-direction:column;transform-origin:75% 25%;
+  transition:transform .45s cubic-bezier(.22,.68,0,1),opacity .35s ease;
+  /* иначе на тач-устройствах наш свайп и нативный скролл страницы спорят
+     друг с другом — страницу дёргало при каждом смахивании карточки */
+  touch-action:pan-y;
+}
+.feed-card-tag{font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:12px}
+.feed-card-note{margin:12px 0 0;font-size:.82rem;color:var(--red-bright);font-weight:600}
+.feed-card[data-pos="0"]{transform:translate(0,0) rotate(0deg) scale(1);z-index:4;opacity:1}
+.feed-card[data-pos="1"]{transform:translate(14px,14px) rotate(-5deg) scale(.95);z-index:3;opacity:.85;pointer-events:none}
+.feed-card[data-pos="2"]{transform:translate(22px,24px) rotate(-8deg) scale(.9);z-index:2;opacity:.35;pointer-events:none}
+.feed-card[data-pos="3"]{transform:translate(28px,32px) rotate(-10deg) scale(.86);z-index:1;opacity:0;pointer-events:none}
+.feed-card.leaving{transition:transform .35s ease,opacity .3s ease;transform:translateX(90px) rotate(10deg) scale(.92) !important;opacity:0 !important}
+.feed-hint{margin-top:18px;text-align:center;font-size:.82rem;color:var(--fg-dim)}
+@media (max-width:480px){
+  .feed{height:525px}
+}
+
+/* ---------- why-subscription cards ---------- */
+.whygrid{margin-top:40px;display:grid;gap:14px}
+@media (min-width:760px){ .whygrid{grid-template-columns:repeat(3,1fr)} }
+.why{padding:28px 26px}
+.why h3{font-size:1.15rem}
+.why p{color:var(--fg-dim);margin-top:12px;font-size:.94rem;font-family:var(--font-body)}
+
+/* ---------- steps ---------- */
+.steps{margin-top:48px;display:grid;gap:16px}
+@media (min-width:760px){ .steps{grid-template-columns:repeat(3,1fr)} }
+.step{padding:30px 26px}
+.step .n{font-family:var(--font-display);font-size:2.2rem;color:var(--red);font-weight:800;line-height:1}
+.step h3{font-size:1.2rem;margin-top:14px}
+.step p{color:var(--fg-dim);margin-top:10px;font-size:.96rem;font-family:var(--font-body)}
+
+/* ---------- about ---------- */
+.about{display:grid;gap:40px;align-items:center}
+@media (min-width:820px){ .about{grid-template-columns:.75fr 1.25fr} }
+/* ---------- hanging badge card, flips on hover/tap ---------- */
+.team-row{margin-top:44px;display:grid;row-gap:28px;column-gap:40px;justify-items:center}
+@media (min-width:820px){
+  .team-row{
+    grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;
+    grid-auto-flow:column;align-items:start;row-gap:0;
+  }
+  /* each member's badge / quote / bio becomes its own grid row, shared
+     across both columns, so the two columns line up row for row no
+     matter how long either person's quote or bio text runs */
+  .team-member{display:contents}
+}
+.team-member{max-width:320px;text-align:center}
+.team-member .role-tag, .team-member blockquote, .team-member .who, .team-member .placeholder-note{text-align:left}
+
+.badge-wrap{
+  display:flex;flex-direction:column;align-items:center;width:180px;max-width:180px;margin:0 auto 24px;
+}
+/* На ≥820px .team-member становится display:contents, и .badge-wrap —
+   напрямую grid-элементом .team-row — без явной width (только max-width)
+   grid схлопывал карточку почти до нуля вместо 180px. */
+.badge-strap{
+  width:20px;height:40px;border-radius:3px;
+  background:linear-gradient(180deg, var(--surface), #0d0d0d);
+  border:1px solid var(--line);border-bottom:none;
+}
+.badge-clip{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--glass-border);background:var(--bg-2);
+  margin-top:-7px;z-index:2;
+}
+.badge-flip{
+  position:relative;width:100%;aspect-ratio:4/5;cursor:pointer;margin-top:-1px;
+  perspective:1400px;transform-style:preserve-3d;
+}
+.badge-front, .badge-back{
+  position:absolute;inset:0;border-radius:20px;overflow:hidden;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1);
+  transform:rotateY(0deg);
+}
+.badge-back{transform:rotateY(180deg)}
+.badge-flip.flipped .badge-front{transform:rotateY(-180deg)}
+.badge-flip.flipped .badge-back{transform:rotateY(0deg)}
+.badge-photo{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
+  color:var(--fg-dim);font-size:12px;text-align:center;padding:20px;
+}
+.avatar-placeholder{
+  width:72px;height:72px;border-radius:50%;background:var(--red-bright);color:var(--on-accent);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+  font-weight:800;font-size:1.9rem;
+}
+.badge-caption{
+  position:absolute;left:0;right:0;bottom:0;padding:14px 16px;
+  background:linear-gradient(transparent, rgba(0,0,0,.8));text-align:left;
+}
+.badge-caption b{display:block;font-family:var(--font-display);font-size:1.05rem}
+.badge-caption span{display:block;color:var(--fg-dim);font-size:.78rem;margin-top:2px;font-family:var(--font-body)}
+.badge-back-inner{
+  width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:22px;text-align:center;
+}
+.badge-handle{font-family:var(--font-body);font-size:.88rem;color:var(--fg-dim)}
+.badge-hint{margin-top:14px;font-size:11px;color:var(--fg-dim);text-align:center}
+
+.photo-slot{
+  aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;
+  color:var(--fg-dim);font-size:13px;text-align:center;padding:24px;border-style:dashed;
+}
+.role-tag{font-size:13px;color:var(--red-bright);font-weight:600;letter-spacing:.02em;margin-bottom:14px}
+.about blockquote{font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.35;margin:0;font-weight:700}
+.about blockquote .script{font-family:var(--font-script);color:var(--red-bright);font-size:1.15em}
+.about .who{margin-top:22px;color:var(--fg-dim);font-size:.98rem;font-family:var(--font-body)}
+.placeholder-note{margin-top:20px;font-size:12.5px;color:var(--fg-dim);border-left:2px solid var(--red);padding-left:14px;font-family:var(--font-body)}
+.bio{margin-top:18px}
+.bio-toggle{background:none;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--red-bright);font-family:var(--font-body);font-size:.9rem;font-weight:600}
+.bio-toggle .plus{font-size:1.2rem;font-weight:400;transition:transform .3s}
+.bio[data-open="true"] .plus{transform:rotate(45deg)}
+.bio .a{max-height:0;overflow:hidden;transition:max-height .4s ease}
+
+/* ---------- faq: glass rows ---------- */
+.faq{margin-top:48px;display:flex;flex-direction:column;gap:12px}
+.q button{
+  width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  background:none;border:none;color:var(--fg);text-align:left;cursor:pointer;
+  padding:22px 26px;font-family:var(--font-display);font-size:1.05rem;font-weight:700;
+}
+.q .plus{color:var(--red);font-weight:400;font-size:1.4rem;transition:transform .3s;flex-shrink:0;font-family:var(--font-body)}
+.q[data-open="true"] .plus{transform:rotate(45deg)}
+.q .a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.q .a p{color:var(--fg-dim);font-size:1rem;padding:0 26px 24px;margin:0;max-width:58ch;font-family:var(--font-body)}
+
+/* highlight pulse: draws the eye when arriving straight at the privacy
+   section from a link (e.g. the bot's consent line), not on an ordinary
+   in-page click — see the location.hash check below */
+@keyframes attn-pulse{
+  0%, 100%{box-shadow:0 0 0 0 rgba(228,253,151,0)}
+  20%, 60%{box-shadow:0 0 0 7px rgba(228,253,151,.5)}
+  40%, 80%{box-shadow:0 0 0 0 rgba(228,253,151,0)}
+}
+.q.attn-pulse{animation:attn-pulse 1.1s ease-in-out 2}
+
+/* ---------- final cta ---------- */
+.cta-final{text-align:center;padding-block:56px}
+.cta-final h2{font-size:clamp(1.7rem,3.2vw,2.5rem);max-width:19ch;line-height:1.15;margin-inline:auto}
+.cta-final p{color:var(--fg-dim);max-width:42ch;margin:18px auto 0;font-size:1.05rem;font-family:var(--font-body)}
+
+footer{padding-block:40px}
+.foot-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;font-size:13px;color:var(--fg-dim)}
+
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.001ms !important;transition-duration:.001ms !important} }
+</style>
+
+<div class="rail" aria-hidden="true"><div class="rail-fill" id="railFill"></div></div>
+<div class="wrap">
+<header class="bar">
+  <div class="bar-inner">
+    <div class="mark">
+      <svg class="mark-icon" width="30" height="30" viewBox="0 0 36 36" aria-hidden="true">
+        <circle cx="18" cy="18" r="18" fill="#E4FD97"/>
+        <rect x="9" y="9" width="7" height="7" rx="1.8" fill="#141414"/>
+        <rect x="20" y="9" width="7" height="7" rx="1.8" fill="#5b6148"/>
+        <rect x="9" y="20" width="7" height="7" rx="1.8" fill="#5b6148"/>
+        <rect x="20" y="20" width="7" height="7" rx="1.8" fill="#5b6148"/>
+      </svg>
+      Быстрый старт с AI
+    </div>
+    <nav>
+      <a href="#modules">Модули</a>
+      <a href="#how">Как это работает</a>
+      <a href="#faq">Вопросы</a>
+    </nav>
+    <div class="bar-right">
+      <button type="button" class="burger" id="burgerBtn" aria-expanded="false" aria-controls="mobileNav" aria-label="Открыть меню">
+        <span class="burger-icon"><span></span><span></span><span></span></span>
+      </button>
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Начать</a>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" data-open="false">
+    <a href="#modules">Модули</a>
+    <a href="#how">Как это работает</a>
+    <a href="#faq">Вопросы</a>
+  </nav>
+</header>
+</div>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="kicker">AI-подписка без привязки к нише</div>
+    <h1 id="heroH1">Работает для <span class="script">любого</span> бизнеса</h1>
+    <p>Контент, переписка с клиентами, документы и идеи — всё в одной подписке. Настраивается под вас, а не под шаблон.</p>
+    <div class="hero-cta">
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Подобрать модули</a>
+      <a class="btn btn-line" href="#modules">Смотреть модули и цены</a>
+    </div>
+    <div class="hero-price">от <b>990 ₽/мес</b> за 1 модуль — платите только за то, что используете</div>
+  </section>
+
+  <section id="about">
+    <div class="kicker2">Команда</div>
+    <h2 class="lede">Кто стоит за подпиской</h2>
+    <div class="team-row">
+      <div class="team-member">
+        <div class="badge-wrap">
+          <div class="badge-strap"></div>
+          <div class="badge-clip"></div>
+          <div class="badge-flip" tabindex="0" role="button" aria-label="Перевернуть бейдж — показать контакт">
+            <div class="badge-front glass">
+              <div class="badge-photo"><div class="avatar-placeholder">В</div></div>
+              <div class="badge-caption">
+                <b>Валерия</b>
+                <span>AI-консультант, основательница</span>
+              </div>
+            </div>
+            <div class="badge-back glass">
+              <div class="badge-back-inner">
+                <span class="role-tag" style="margin-bottom:12px">Связаться</span>
+                <div class="badge-handle">@valeria_romans</div>
+                <a class="btn btn-red" href="https://t.me/valeria_romans" target="_blank" rel="noopener" onclick="event.stopPropagation()">Написать в Telegram</a>
+              </div>
+            </div>
+          </div>
+          <div class="badge-hint">Переверните</div>
+        </div>
+        <blockquote>«Я — Валерия, независимый AI-консультант. Помогаю малому бизнесу <span class="script">внедрять</span> AI-инструменты для рутинных задач — без привязки к одной нише.»</blockquote>
+        <div class="bio" data-open="false">
+          <button type="button" class="bio-toggle" aria-expanded="false">Читать историю<span class="plus">+</span></button>
+          <div class="a">
+            <div class="who">Моя цель — помочь людям освоиться в AI: без технического бэкграунда, без страха что-то сломать и без лишней спешки. Для меня важно, чтобы это было комфортно и безопасно — шаг за шагом, а не рывком.</div>
+            <div class="placeholder-note">Фото — пока заглушка, вставим, когда решишь.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-member">
+        <div class="badge-wrap">
+          <div class="badge-strap"></div>
+          <div class="badge-clip"></div>
+          <div class="badge-flip" tabindex="0" role="button" aria-label="Перевернуть бейдж — показать контакт">
+            <div class="badge-front glass">
+              <div class="badge-photo"><div class="avatar-placeholder">Ю</div></div>
+              <div class="badge-caption">
+                <b>Юля</b>
+                <span>Маркетинг, лидер коммуникации</span>
+              </div>
+            </div>
+            <div class="badge-back glass">
+              <div class="badge-back-inner">
+                <span class="role-tag" style="margin-bottom:12px">Связаться</span>
+                <div class="badge-handle">@yulia2000pr</div>
+                <a class="btn btn-red" href="https://t.me/yulia2000pr" target="_blank" rel="noopener" onclick="event.stopPropagation()">Написать в Telegram</a>
+              </div>
+            </div>
+          </div>
+          <div class="badge-hint">Переверните</div>
+        </div>
+        <blockquote>«Отвечаю за то, чтобы о подписке узнали нужные люди, и слежу, чтобы обратная связь от клиентов доходила до продукта.»</blockquote>
+        <div class="bio" data-open="false">
+          <button type="button" class="bio-toggle" aria-expanded="false">Читать историю<span class="plus">+</span></button>
+          <div class="a">
+            <div class="who">Юля — лидер коммуникации в команде: она на связи с клиентами и готова ответить на любой вопрос по подписке, не отмахиваясь и не затягивая.</div>
+            <div class="placeholder-note">Фото — пока заглушка, вставим, когда решите.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="kicker2">Для кого это</div>
+    <h2 class="lede">Для любого бизнеса, где <span class="script">рутина</span> отнимает время</h2>
+    <p class="whofor">
+      <b>Эксперты и консультанты, агентства, онлайн-обучение, услуги на выезде,
+      розница, фрилансеры</b> — или что-то совсем своё. Модули собраны по задачам,
+      а не по отраслям, поэтому работают для любого направления.
+    </p>
+  </section>
+
+  <section id="modules">
+    <div class="kicker2">Что внутри подписки</div>
+    <h2 class="lede">Четыре модуля. Нажмите, чтобы собрать свой набор</h2>
+    <div class="modgrid" id="modGrid">
+      <div class="mod glass lift" data-mod="content" role="button" tabindex="0" aria-pressed="true">
+        <div class="mod-check" aria-hidden="true"></div>
+        <h3>Контент</h3>
+        <p>Шаблоны постов и текстов + настройка AI-инструментов, чтобы генерировать новые каждый месяц самостоятельно.</p>
+        <ul><li>10 готовых шаблонов на старте</li><li>5 промптов для своих вариаций</li><li>Обновление каждый месяц</li></ul>
+        <div class="mod-value">Экономит ориентировочно 4–6 часов в месяц на подборе тем и редактуре текста</div>
+      </div>
+      <div class="mod glass lift" data-mod="clients" role="button" tabindex="0" aria-pressed="false">
+        <div class="mod-check" aria-hidden="true"></div>
+        <h3>Клиенты</h3>
+        <p>Шаблоны ответов, авто-реакции на типовые вопросы и напоминания для переписки с клиентами.</p>
+        <ul><li>6 готовых ответов на частые вопросы</li><li>Шаблоны под тон переписки</li></ul>
+        <div class="mod-value">Экономит ориентировочно 2–3 часа в месяц на переписке с повторяющимися вопросами</div>
+      </div>
+      <div class="mod glass lift" data-mod="docs" role="button" tabindex="0" aria-pressed="false">
+        <div class="mod-check" aria-hidden="true"></div>
+        <h3>Документы</h3>
+        <p>Шаблоны регламентов, коммерческих предложений и чек-листов, адаптированные под ваше направление.</p>
+        <ul><li>Коммерческое предложение</li><li>Письмо-напоминание об оплате</li><li>Чек-лист старта работы</li></ul>
+        <div class="mod-value">Экономит часы, которые иначе уходят на то, чтобы собирать документы с нуля каждый раз</div>
+      </div>
+      <div class="mod glass lift" data-mod="ideas" role="button" tabindex="0" aria-pressed="false">
+        <div class="mod-check" aria-hidden="true"></div>
+        <h3>Идеи</h3>
+        <p>Подбор и настройка AI-инструментов под генерацию идей и решений — под вашу конкретную задачу.</p>
+        <ul><li>5 промптов месяца</li><li>Разбор конкурентов и акций</li></ul>
+        <div class="mod-value">Экономит ориентировочно 2–4 часа в месяц на переборе формулировок методом проб и ошибок</div>
+      </div>
+    </div>
+
+    <div class="calc glass" id="calc">
+      <div class="calc-left">
+        <div class="calc-label">Выбрано модулей</div>
+        <div class="calc-mods" id="calcMods">Контент</div>
+      </div>
+      <div class="calc-right">
+        <div class="calc-price tabular" id="calcPrice">990 <small>₽/мес</small></div>
+        <a class="btn btn-red" id="calcCta" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Оформить этот набор</a>
+      </div>
+    </div>
+
+    <div class="glass indiv">
+      <h3>Нужно что-то нестандартное?</h3>
+      <p>Если задача не укладывается ни в один из 4 модулей — собираем решение с нуля под вашу задачу, а не по готовому шаблону.</p>
+      <div class="calc-price tabular">от 3 990 <small>₽/мес</small></div>
+      <a class="btn btn-line" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Обсудить индивидуальный пакет</a>
+    </div>
+
+    <div class="feed-wrap">
+      <div class="sample-label">Так выглядят готовые материалы — примеры из разных сфер, у вас будет под вашу</div>
+      <div class="feed" id="feed">
+        <div class="feed-card" data-module="content">
+          <div class="feed-card-tag">Контент</div>
+          <div class="sample-post">
+            <p>Ламинирование ресниц до Нового года — успейте, пока есть свободные окна 🎄</p>
+            <p>Эффект держится 6–8 недель: ресницы выглядят ухоженно даже без туши.</p>
+            <p>✅ Без вреда для натуральных ресниц<br>✅ Результат виден сразу<br>✅ Подходит для чувствительных глаз</p>
+            <p class="sample-tags">Запись — в директ или по ссылке в шапке</p>
+          </div>
+          <p class="feed-card-note">✨ Под вашу услугу, тон и сезон — не универсальный текст из интернета</p>
+        </div>
+        <div class="feed-card" data-module="content">
+          <div class="feed-card-tag">Контент</div>
+          <div class="sample-post">
+            <p>Тыквенный раф возвращается — и только до конца ноября 🍂</p>
+            <p>Согревает в любую погоду, отлично заходит с корицей сверху.</p>
+            <p>✅ На цельном молоке<br>✅ Можно взять с собой<br>✅ Подписчикам — скидка 10% по промокоду</p>
+            <p class="sample-tags">Ждём вас с 8:00 до 21:00</p>
+          </div>
+          <p class="feed-card-note">✨ Учитывает сезон и то, что вы уже публиковали — не повторяется</p>
+        </div>
+        <div class="feed-card" data-module="clients">
+          <div class="feed-card-tag">Клиенты</div>
+          <div class="sample-post">
+            <p>Здравствуйте!</p>
+            <p>Диагностика подвески — 1 500 ₽, займёт около часа.</p>
+            <p>Ближайшая запись — сегодня в 17:00 или завтра утром, что удобнее?</p>
+            <p>Если уже знаете, где стучит или шумит — напишите, учтём при осмотре.</p>
+          </div>
+          <p class="feed-card-note">✨ Подстраивается под ваш график записи и манеру общения</p>
+        </div>
+        <div class="feed-card" data-module="clients">
+          <div class="feed-card-tag">Клиенты</div>
+          <div class="sample-post">
+            <p>Привет! 💪</p>
+            <p>Пробное занятие — бесплатно, нужно только выбрать удобное время.</p>
+            <p>Сегодня есть места на 19:00 (группа) и 20:00 (персонально).</p>
+            <p>Какой формат вам ближе — расскажу подробнее!</p>
+          </div>
+          <p class="feed-card-note">✨ Отвечает в вашем тоне — от делового до неформального</p>
+        </div>
+        <div class="feed-card" data-module="docs">
+          <div class="feed-card-tag">Документы</div>
+          <div class="sample-post">
+            <p><b>Коммерческое предложение — генеральная уборка офиса</b></p>
+            <p>Здравствуйте, Дмитрий! Предлагаем разовую генеральную уборку офиса 120 м² бригадой из 3 человек.</p>
+            <p>Что входит: мытьё окон, химчистка мебели, уборка санузлов, вывоз мусора.</p>
+            <p class="sample-tags">12 000 ₽ · выполнение в течение 2 дней</p>
+          </div>
+          <p class="feed-card-note">✨ Аргументы и структура — под вашу нишу и клиента</p>
+        </div>
+        <div class="feed-card" data-module="docs">
+          <div class="feed-card-tag">Документы</div>
+          <div class="sample-post">
+            <p><b>Счёт на оплату — ремонт стиральной машины</b></p>
+            <p>Выполненные работы: диагностика, замена подшипника, проверка после ремонта.</p>
+            <p>Итого: 3 400 ₽ (детали — 2 200 ₽, работа — 1 200 ₽)</p>
+            <p class="sample-tags">Гарантия на работу — 3 месяца</p>
+          </div>
+          <p class="feed-card-note">✨ Формат и детали — под то, как у вас принято оформлять</p>
+        </div>
+        <div class="feed-card" data-module="ideas">
+          <div class="feed-card-tag">Идеи</div>
+          <div class="sample-post">
+            <p class="sample-tags">Промпт для AI:</p>
+            <p>«Ты — маркетолог кондитерской. Предложи 5 тем постов к Новому году: от тортов на заказ до историй с кухни — заголовок и фраза, почему это зайдёт именно сейчас».</p>
+          </div>
+          <p class="feed-card-note">✨ 5 готовых идей за секунды вместо часа мозгового штурма</p>
+        </div>
+        <div class="feed-card" data-module="ideas">
+          <div class="feed-card-tag">Идеи</div>
+          <div class="sample-post">
+            <p class="sample-tags">Промпт для AI:</p>
+            <p>«Ты — маркетолог цветочного магазина. Предложи 5 поводов для постов на ближайший месяц, помимо праздников — сезонные цветы, уходовые советы, личные события клиентов».</p>
+          </div>
+          <p class="feed-card-note">✨ Подбирает темы, которые вы бы сами не сразу вспомнили</p>
+        </div>
+      </div>
+      <p class="feed-hint">Нажмите на карточку</p>
+    </div>
+  </section>
+
+  <section id="base">
+    <div class="kicker2">Входит в любую подписку</div>
+    <h2 class="lede">База внедрения — один раз, не каждый месяц</h2>
+    <p class="whofor">
+      Короткая инструкция, как подключить AI-инструменты к своим задачам: как
+      сохранить данные о бизнесе в настройках ИИ, чтобы не объяснять контекст
+      заново в каждом запросе, и как получать материалы месяца через бота —
+      без путаницы. Это не часть модулей, а разовый онбординг для всех
+      подписчиков.
+    </p>
+  </section>
+
+  <section id="why">
+    <div class="kicker2">Почему подписка, а не разовая покупка</div>
+    <h2 class="lede">Потому что рутина не заканчивается через месяц</h2>
+    <div class="whygrid">
+      <div class="why glass">
+        <h3>Что именно обновляется</h3>
+        <p>Каждый месяц — новый набор под текущий сезон и задачи: другие темы постов, другие промпты. Не повтор прошлого месяца под другой обложкой.</p>
+      </div>
+      <div class="why glass">
+        <h3>Кто обновляет</h3>
+        <p>Пакеты каждый месяц собирает и проверяет лично Валерия — не автоматическая рассылка без присмотра.</p>
+      </div>
+      <div class="why glass">
+        <h3>Почему не разовая покупка</h3>
+        <p>Разовый пакет промптов устаревает за пару недель — меняются сезон, тренды, задачи бизнеса. Подписка держит материалы актуальными без того, чтобы покупать заново каждый раз.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="kicker2">Как это работает</div>
+    <h2 class="lede">От заявки до первого пакета — три шага</h2>
+    <div class="steps">
+      <div class="step glass lift"><div class="n">01</div><h3>Разбор в боте</h3><p>Отвечаете на несколько вопросов — бот подбирает модули под ваше направление и задачи, показывает сумму сразу.</p></div>
+      <div class="step glass lift"><div class="n">02</div><h3>Оплата</h3><p>Валерия подтверждает набор и присылает реквизиты в том же чате.</p></div>
+      <div class="step glass lift"><div class="n">03</div><h3>Пакет каждый месяц</h3><p>Получаете материалы по выбранным модулям. В начале следующего месяца — новый пакет.</p></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="kicker2">Вопросы</div>
+    <h2 class="lede">Коротко о важном</h2>
+    <div class="faq">
+      <div class="q glass" data-open="false">
+        <button type="button">Можно взять не все 4 модуля?<span class="plus">+</span></button>
+        <div class="a"><p>Да — берёте от 1 до 4 модулей, платите только за них. Можно менять набор в начале следующего месяца.</p></div>
+      </div>
+      <div class="q glass" data-open="false">
+        <button type="button">Чем это лучше, чем просто писать в ChatGPT самому?<span class="plus">+</span></button>
+        <div class="a"><p>ChatGPT — просто инструмент, он не знает ваш бизнес и не подскажет, что именно у вас спросить. Здесь вы платите не за доступ к ИИ, а за готовую настройку под вашу задачу: шаблоны и промпты, которые уже работают, без самостоятельного подбора формулировок методом проб и ошибок — и обновление каждый месяц, чтобы не повторять эту работу заново.</p></div>
+      </div>
+      <div class="q glass" data-open="false">
+        <button type="button">А если мой бизнес не похож ни на один пример?<span class="plus">+</span></button>
+        <div class="a"><p>Модули собраны по задачам, а не по отраслям — поэтому работают для любого направления. В боте есть пункт «Другое».</p></div>
+      </div>
+      <div class="q glass" data-open="false">
+        <button type="button">Что если контент не подойдёт моему тону?<span class="plus">+</span></button>
+        <div class="a"><p>Шаблоны — основа, которую вы адаптируете под себя; промпты в пакете как раз для этого и даны.</p></div>
+      </div>
+      <div class="q glass" data-open="false">
+        <button type="button">Что я получаю в первый день после оплаты?<span class="plus">+</span></button>
+        <div class="a"><p>Базу внедрения и первый пакет по выбранным модулям — всё приходит в Telegram-боте, без личного кабинета и лишних логинов.</p></div>
+      </div>
+      <div class="q glass" data-open="false">
+        <button type="button">Можно отменить подписку или вернуть деньги, если не подойдёт?<span class="plus">+</span></button>
+        <div class="a"><p>Да, в любой момент — просто не продлеваете на следующий месяц, оплаченный период продолжает действовать до конца. Деньги за уже полученный пакет текущего месяца не возвращаются: как только материалы пришли в боте, услуга считается оказанной. Исключение — если материалы не дошли по нашей вине, списали дважды или не ту сумму: тогда возвращаем полностью. Если в первые 3 дня после оплаты поймёте, что не подходит — тоже вернём деньги.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-final glass" style="margin-bottom:60px">
+    <div class="kicker2" style="justify-content:center;display:flex">Готовы начать</div>
+    <h2>Два вопроса в боте — и вы увидите свой <span class="script">набор</span></h2>
+    <p>Без звонков и презентаций. Бот подберёт модули под ваше направление за пару минут.</p>
+    <div class="hero-cta" style="margin-top:30px;justify-content:center">
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Открыть Telegram-бота</a>
+    </div>
+  </section>
+
+  <section id="privacy" style="padding-block:20px 0">
+    <div class="faq">
+      <div class="q glass" data-open="false" style="font-size:.9em">
+        <button type="button">Политика конфиденциальности<span class="plus">+</span></button>
+        <div class="a">
+          <p>Этот сайт и Telegram-бот «Быстрый старт с AI» обрабатывают персональные данные в соответствии с 152-ФЗ «О персональных данных». Оператор — Праводелова Валерия Романовна.</p>
+          <p><b>Какие данные собираются:</b> имя и username из профиля Telegram, описание вашего бизнеса и задач/трудностей, текст свободных обращений (включая запрос на индивидуальный пакет и отзывы), сумма и факт отметки об оплате.</p>
+          <p><b>Зачем:</b> чтобы подготовить материалы под ваш бизнес, оформить и вести подписку, связаться по вопросам заказа, напомнить о продлении.</p>
+          <p><b>Как хранятся:</b> в закрытой базе бота, доступ — только у Валерии и Юли. Третьим лицам не передаются, для рекламы не используются.</p>
+          <p><b>Срок хранения:</b> пока действует подписка и некоторое время после — для истории обращений. Можно попросить удалить данные в любой момент.</p>
+          <p><b>Ваши права:</b> запросить, что сохранено, или попросить удалить — через кнопки «Написать Валерии/Юле напрямую» в разделе «Помощь» (/help) бота.</p>
+          <p>Отправляя сообщения боту, вы подтверждаете, что ознакомлены с этой политикой и согласны на обработку указанных данных в перечисленных целях.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="foot-row">
+    <span>Быстрый старт с AI — Валерия</span>
+    <span>Подписка на AI-инструменты для малого бизнеса</span>
+    <a href="#privacy" style="text-decoration:underline">Политика конфиденциальности</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGsap = typeof window.gsap !== 'undefined';
+
+  // badge flip: single source of truth is the 'flipped' class (no CSS :hover
+  // driving it too — that was the bug: on iOS a tap first simulates :hover,
+  // then fires click, so two independent mechanisms fought each other and
+  // the card got stuck. Desktop: mouse enter/leave sets the class directly.
+  // Touch: a swipe in either direction toggles it (tap does nothing, so a
+  // stray tap while scrolling doesn't accidentally flip it).
+  var isFinePointer = window.matchMedia('(pointer: fine)').matches;
+  document.querySelectorAll('.badge-flip').forEach(function(badge){
+    if (isFinePointer) {
+      badge.addEventListener('mouseenter', function(){ badge.classList.add('flipped'); });
+      badge.addEventListener('mouseleave', function(){ badge.classList.remove('flipped'); });
+      badge.addEventListener('focus', function(){ badge.classList.add('flipped'); });
+      badge.addEventListener('blur', function(){ badge.classList.remove('flipped'); });
+    } else {
+      var touchStartX = 0, touchStartY = 0;
+      badge.addEventListener('touchstart', function(e){
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, {passive: true});
+      badge.addEventListener('touchend', function(e){
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        var dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy)) {
+          badge.classList.toggle('flipped');
+        }
+      }, {passive: true});
+    }
+    badge.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); badge.classList.toggle('flipped'); }
+    });
+  });
+
+  document.querySelectorAll('.q button').forEach(function(btn, i){
+    var a = btn.closest('.q').querySelector('.a');
+    a.id = a.id || ('faq-a-' + i);
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', a.id);
+    btn.addEventListener('click', function(){
+      var q = btn.closest('.q');
+      var open = q.getAttribute('data-open') === 'true';
+      q.setAttribute('data-open', open ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      a.style.maxHeight = open ? '0px' : a.scrollHeight + 'px';
+    });
+  });
+
+  document.querySelectorAll('.bio-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var bio = btn.closest('.bio');
+      var open = bio.getAttribute('data-open') === 'true';
+      var a = bio.querySelector('.a');
+      bio.setAttribute('data-open', open ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      btn.firstChild.textContent = open ? 'Читать историю' : 'Свернуть';
+      a.style.maxHeight = open ? '0px' : a.scrollHeight + 'px';
+    });
+  });
+
+  // burger menu: mobile stand-in for the nav links hidden below 860px
+  (function(){
+    var burger = document.getElementById('burgerBtn');
+    var panel = document.getElementById('mobileNav');
+    if(!burger || !panel) return;
+    function closeMenu(){
+      panel.setAttribute('data-open', 'false');
+      burger.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu(){
+      panel.setAttribute('data-open', 'true');
+      burger.setAttribute('aria-expanded', 'true');
+    }
+    burger.addEventListener('click', function(){
+      var isOpen = panel.getAttribute('data-open') === 'true';
+      isOpen ? closeMenu() : openMenu();
+    });
+    panel.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', closeMenu);
+    });
+    document.addEventListener('click', function(e){
+      if(!panel.contains(e.target) && e.target !== burger && !burger.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeMenu();
+    });
+    window.addEventListener('resize', function(){
+      if(window.innerWidth >= 860) closeMenu();
+    });
+  })();
+
+  // arriving directly at #privacy (e.g. the link in the bot's consent
+  // line) — auto-open the accordion and pulse it so it doesn't look like
+  // just another collapsed FAQ row people skip past. Checked once, at
+  // initial load only: an in-page click on the footer link further down
+  // does NOT reload the document, so this block never re-runs for it —
+  // that's the whole trick, no referrer/Telegram sniffing needed.
+  if(location.hash === '#privacy'){
+    var privacyQ = document.querySelector('#privacy .q');
+    if(privacyQ){
+      var privacyBtn = privacyQ.querySelector('button');
+      var privacyA = privacyQ.querySelector('.a');
+      privacyQ.setAttribute('data-open', 'true');
+      privacyBtn.setAttribute('aria-expanded', 'true');
+      privacyA.style.maxHeight = privacyA.scrollHeight + 'px';
+      setTimeout(function(){
+        var barEl = document.querySelector('.bar-inner');
+        var barHeight = barEl ? barEl.getBoundingClientRect().height : 0;
+        var top = privacyQ.getBoundingClientRect().top + window.pageYOffset - barHeight - 28;
+        window.scrollTo({top: top, behavior: 'smooth'});
+        privacyQ.classList.add('attn-pulse');
+        privacyQ.addEventListener('animationend', function(){ privacyQ.classList.remove('attn-pulse'); });
+      }, 250);
+    }
+  }
+
+  // smooth scroll for in-page nav links, offset so the sticky header
+  // never covers the top of the section being scrolled to
+  document.querySelectorAll('a[href^="#"]').forEach(function(link){
+    link.addEventListener('click', function(e){
+      var id = link.getAttribute('href').slice(1);
+      var target = document.getElementById(id);
+      if(!target) return;
+      e.preventDefault();
+      var barEl = document.querySelector('.bar-inner');
+      var barHeight = barEl ? barEl.getBoundingClientRect().height : 0;
+      var top = target.getBoundingClientRect().top + window.pageYOffset - barHeight - 28;
+      window.scrollTo({top: top, behavior: 'smooth'});
+    });
+  });
+
+  // ---- live module picker + price calculator (990/1490/1790/1990) ----
+  (function(){
+    var MOD_LABELS = {content:'Контент', clients:'Клиенты', docs:'Документы', ideas:'Идеи'};
+    var PRICE_BY_COUNT = {0:0, 1:990, 2:1490, 3:1790, 4:1990};
+    var grid = document.getElementById('modGrid');
+    if(!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.mod'));
+    var priceEl = document.getElementById('calcPrice');
+    var modsEl = document.getElementById('calcMods');
+    // Выбор на сайте передаётся боту диплинком (t.me/bot?start=content_docs),
+    // чтобы не заставлять выбирать те же модули второй раз в боте — бот
+    // сам откроет форму подбора с уже отмеченными карточками.
+    var ctaEl = document.getElementById('calcCta');
+    var BOT_URL = 'https://t.me/valeria_ai_consult_bot';
+
+    function money(n){ return n.toLocaleString('ru-RU'); }
+
+    function update(){
+      var selected = cards.filter(function(c){ return c.getAttribute('aria-pressed') === 'true'; });
+      var count = selected.length;
+      var price = PRICE_BY_COUNT[count] || 0;
+      modsEl.textContent = count ? selected.map(function(c){ return MOD_LABELS[c.dataset.mod]; }).join(', ') : 'Ничего не выбрано';
+      priceEl.innerHTML = count ? money(price) + ' <small>₽/мес</small>' : '<small>выберите хотя бы один модуль</small>';
+      if (ctaEl) {
+        var keys = selected.map(function(c){ return c.dataset.mod; });
+        ctaEl.href = keys.length ? (BOT_URL + '?start=' + keys.join('_')) : BOT_URL;
+      }
+    }
+
+    cards.forEach(function(card){
+      function toggle(){
+        var pressed = card.getAttribute('aria-pressed') === 'true';
+        card.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+        update();
+      }
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+    });
+
+    update();
+  })();
+
+  // ---- examples "feed": card stack, click/swipe cycles the front card to
+  // the back and the next one steps forward (loops forever through all 8) ----
+  (function(){
+    var feed = document.getElementById('feed');
+    if(!feed) return;
+    var cards = Array.prototype.slice.call(feed.querySelectorAll('.feed-card'));
+    var order = cards.map(function(_, i){ return i; });
+    var counterEl = document.getElementById('feedCounter');
+    var current = 1;
+
+    function layout(){
+      order.forEach(function(cardIndex, pos){
+        // Только 0/1/2 различаются визуально (прямая + 2 внахлёст позади),
+        // всё остальное прячется в ту же невидимую позицию — так стопка
+        // выглядит одинаково аккуратно и на 4, и на 8 карточках.
+        cards[cardIndex].setAttribute('data-pos', Math.min(pos, 3));
+      });
+      if (counterEl) counterEl.textContent = current + ' / ' + cards.length;
+    }
+    layout();
+
+    var advancing = false;
+    function advance(){
+      if(advancing) return;
+      advancing = true;
+      var frontEl = cards[order[0]];
+      frontEl.classList.add('leaving');
+      setTimeout(function(){
+        order.push(order.shift());
+        current = current % cards.length + 1;
+        layout();
+        frontEl.classList.remove('leaving');
+        advancing = false;
+      }, 320);
+    }
+
+    cards.forEach(function(card){
+      card.addEventListener('click', function(){
+        if(card.getAttribute('data-pos') === '0') advance();
+      });
+      var startX = 0, startY = 0;
+      card.addEventListener('touchstart', function(e){
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }, {passive:true});
+      card.addEventListener('touchend', function(e){
+        if(card.getAttribute('data-pos') !== '0') return;
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        if(Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) advance();
+      }, {passive:true});
+    });
+  })();
+
+  function countUp(el, to, dur){
+    var t0=null;
+    function step(ts){
+      if(!t0) t0=ts;
+      var p=Math.min(1,(ts-t0)/dur);
+      var eased=1-Math.pow(1-p,3);
+      el.textContent=Math.round(to*eased).toLocaleString('ru-RU');
+      if(p<1) requestAnimationFrame(step); else el.textContent=to.toLocaleString('ru-RU');
+    }
+    requestAnimationFrame(step);
+  }
+
+  if(!hasGsap || reduced){
+    document.querySelectorAll('.js-count').forEach(function(el){
+      el.textContent = Number(el.dataset.to).toLocaleString('ru-RU');
+    });
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  try {
+    // signature moment: headline resolves from a soft blur, script word
+    // settles in a beat after the rest — calm, premium, not aggressive.
+    gsap.set('.hero .kicker, .hero p, .hero-cta, .hero-price', {opacity:0, y:16});
+    gsap.set('#heroH1', {opacity:0, filter:'blur(14px)', y:10});
+    gsap.set('#heroH1 .script', {opacity:0, scale:.85});
+
+    gsap.timeline({defaults:{ease:'power3.out'}})
+      .to('.hero .kicker', {opacity:1, y:0, duration:.6})
+      .to('#heroH1', {opacity:1, filter:'blur(0px)', y:0, duration:1.0}, '-=0.3')
+      .to('#heroH1 .script', {opacity:1, scale:1, duration:.5, ease:'back.out(1.6)'}, '-=0.35')
+      .to('.hero p', {opacity:1, y:0, duration:.6}, '-=0.5')
+      .to('.hero-cta', {opacity:1, y:0, duration:.6}, '-=0.4')
+      .to('.hero-price', {opacity:1, y:0, duration:.5}, '-=0.3');
+
+    // scroll progress rail
+    gsap.to('#railFill', {
+      scaleX:1, ease:'none',
+      scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:true }
+    });
+
+
+    // Reveal — each section lists its OWN top-level reveal units only, never
+    // a container together with something nested inside it (that was the
+    // bug: .mod and its inner <p> both animating meant the paragraph moved
+    // twice — once with its card, once on its own — so it visibly jumped
+    // past the card edge for a frame. Every list below is siblings only.
+    var revealGroups = [
+      ['#who', '.kicker2, .lede, .whofor'],
+      ['#modules', '.kicker2, .lede, .mod, .calc, .indiv, .feed-wrap'],
+      ['#base', '.kicker2, .lede, .whofor'],
+      ['#why', '.kicker2, .lede, .why'],
+      ['#how', '.kicker2, .lede, .step'],
+      ['#about', '.kicker2, .lede, .badge-wrap, blockquote, .bio-toggle'],
+      ['#faq', '.kicker2, .lede, .q'],
+      ['.cta-final', '.kicker2, h2, p, .hero-cta']
+    ];
+    revealGroups.forEach(function(group){
+      var sec = document.querySelector(group[0]);
+      if(!sec) return;
+      var targets = sec.querySelectorAll(group[1]);
+      if(!targets.length) return;
+      gsap.set(targets, {opacity:0, y:20});
+      gsap.to(targets, {
+        opacity:1, y:0, duration:.7, stagger:.06, ease:'power2.out',
+        scrollTrigger:{ trigger:sec, start:'top 80%', once:true }
+      });
+    });
+  } catch(e){
+    document.querySelectorAll('#heroH1, #heroH1 .script, .hero p, .hero-cta, .hero .kicker, .hero-price').forEach(function(el){
+      el.style.opacity='1'; el.style.filter='none'; el.style.transform='none';
+    });
+    document.querySelectorAll('.js-count').forEach(function(el){
+      el.textContent = Number(el.dataset.to).toLocaleString('ru-RU');
+    });
+  }
+})();
+</script>
