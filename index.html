@@ -372,7 +372,7 @@ footer{padding-block:40px}
       <button type="button" class="burger" id="burgerBtn" aria-expanded="false" aria-controls="mobileNav" aria-label="Открыть меню">
         <span class="burger-icon"><span></span><span></span><span></span></span>
       </button>
-      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Начать</a>
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot?start=src-site" target="_blank" rel="noopener">Начать</a>
     </div>
   </div>
   <nav class="mobile-nav" id="mobileNav" data-open="false">
@@ -390,7 +390,7 @@ footer{padding-block:40px}
     <h1 id="heroH1">Работает для <span class="script">любого</span> бизнеса</h1>
     <p>Контент, переписка с клиентами, документы и идеи — всё в одной подписке. Настраивается под вас, а не под шаблон.</p>
     <div class="hero-cta">
-      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Подобрать модули</a>
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot?start=src-site" target="_blank" rel="noopener">Подобрать модули</a>
       <a class="btn btn-line" href="#modules">Смотреть модули и цены</a>
     </div>
     <div class="hero-price">от <b>990 ₽/мес</b> за 1 модуль — платите только за то, что используете</div>
@@ -515,7 +515,7 @@ footer{padding-block:40px}
       </div>
       <div class="calc-right">
         <div class="calc-price tabular" id="calcPrice">990 <small>₽/мес</small></div>
-        <a class="btn btn-red" id="calcCta" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Оформить этот набор</a>
+        <a class="btn btn-red" id="calcCta" href="https://t.me/valeria_ai_consult_bot?start=src-site" target="_blank" rel="noopener">Оформить этот набор</a>
       </div>
     </div>
 
@@ -523,7 +523,7 @@ footer{padding-block:40px}
       <h3>Нужно что-то нестандартное?</h3>
       <p>Если задача не укладывается ни в один из 4 модулей — собираем решение с нуля под вашу задачу, а не по готовому шаблону.</p>
       <div class="calc-price tabular">от 3 990 <small>₽/мес</small></div>
-      <a class="btn btn-line" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Обсудить индивидуальный пакет</a>
+      <a class="btn btn-line" href="https://t.me/valeria_ai_consult_bot?start=src-site" target="_blank" rel="noopener">Обсудить индивидуальный пакет</a>
     </div>
 
     <div class="feed-wrap">
@@ -713,7 +713,7 @@ footer{padding-block:40px}
     <h2>Два вопроса в боте — и вы увидите свой <span class="script">набор</span></h2>
     <p>Без звонков и презентаций. Бот подберёт модули под ваше направление за пару минут.</p>
     <div class="hero-cta" style="margin-top:30px;justify-content:center">
-      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot" target="_blank" rel="noopener">Открыть Telegram-бота</a>
+      <a class="btn btn-red" href="https://t.me/valeria_ai_consult_bot?start=src-site" target="_blank" rel="noopener">Открыть Telegram-бота</a>
     </div>
   </section>
 
@@ -1017,8 +1017,10 @@ footer{padding-block:40px}
       modsEl.textContent = count ? selected.map(function(c){ return MOD_LABELS[c.dataset.mod]; }).join(', ') : 'Ничего не выбрано';
       priceEl.innerHTML = count ? money(price) + ' <small>₽/мес</small>' : '<small>выберите хотя бы один модуль</small>';
       if (ctaEl) {
-        var keys = selected.map(function(c){ return c.dataset.mod; });
-        ctaEl.href = keys.length ? (BOT_URL + '?start=' + keys.join('_')) : BOT_URL;
+        // src-site — метка источника заявки для дашборда (вкладка "План"),
+        // добавляется тем же диплинком, что и выбранные модули.
+        var keys = selected.map(function(c){ return c.dataset.mod; }).concat(['src-site']);
+        ctaEl.href = BOT_URL + '?start=' + keys.join('_');
       }
     }
 
